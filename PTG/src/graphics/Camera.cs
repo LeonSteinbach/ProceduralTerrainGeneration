@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace PTG.src.world
@@ -10,65 +9,45 @@ namespace PTG.src.world
 		public Matrix ProjectionMatrix { private set; get; }
 		public Matrix WorldMatrix { private set; get; }
 
-		Vector3 position;
-		Vector3 direction;
-		Vector3 movement;
+		Vector3 speed;
 		Vector3 rotation;
 
-		public Camera(Vector3 position, Vector3 direction, Vector3 movement, Vector3 landscapePosition)
+		public Camera(Vector3 position, Vector3 target, Vector3 speed, Vector3 worldPosition)
 		{
-			this.position = position;
-			this.direction = direction;
-			this.movement = movement;
-			rotation = movement * 0.02f;
+			this.speed = speed;
+			rotation = speed * 0.005f;
 
-			ViewMatrix = Matrix.CreateLookAt(position, direction, Vector3.Up);
-			ProjectionMatrix = Matrix.CreatePerspective(1.2f, 0.9f, 1.0f, 1000.0f);
-			WorldMatrix = Matrix.CreateTranslation(landscapePosition);
+			ViewMatrix = Matrix.CreateLookAt(position, target, Vector3.Up);
+			ProjectionMatrix = Matrix.CreatePerspective(1f, 1f, 1.0f, 1000.0f);
+			WorldMatrix = Matrix.CreateTranslation(worldPosition);
 		}
 
-		public void Update()
+		public void Update(GameTime gameTime)
 		{
-			Vector3 tempMovement = Vector3.Zero;
-			Vector3 tempRotation = Vector3.Zero;
+			Vector3 newPosition = Vector3.Zero;
+			Vector3 newRotation = Vector3.Zero;
 
 			KeyboardState key = Keyboard.GetState();
 
 			// Movement
-			if (key.IsKeyDown(Keys.A)) tempMovement.X = +movement.X;
-			if (key.IsKeyDown(Keys.D)) tempMovement.X = -movement.X;
-			if (key.IsKeyDown(Keys.R)) tempMovement.Y = -movement.Y;
-			if (key.IsKeyDown(Keys.F)) tempMovement.Y = +movement.Y;
-			if (key.IsKeyDown(Keys.W)) tempMovement.Z = -movement.Z;
-			if (key.IsKeyDown(Keys.S)) tempMovement.Z = +movement.Z;
+			if (key.IsKeyDown(Keys.A)) newPosition.X = +speed.X;
+			if (key.IsKeyDown(Keys.D)) newPosition.X = -speed.X;
+			if (key.IsKeyDown(Keys.F)) newPosition.Y = +speed.Y;
+			if (key.IsKeyDown(Keys.R)) newPosition.Y = -speed.Y;
+			if (key.IsKeyDown(Keys.W)) newPosition.Z = +speed.Z;
+			if (key.IsKeyDown(Keys.S)) newPosition.Z = -speed.Z;
 
 			// Rotation
-			if (key.IsKeyDown(Keys.Up))		tempRotation.Y = -rotation.Y;
-			if (key.IsKeyDown(Keys.Down))	tempRotation.Y = +rotation.Y;
-			if (key.IsKeyDown(Keys.Left))	tempRotation.X = -rotation.X;
-			if (key.IsKeyDown(Keys.Right))	tempRotation.X = +rotation.X;
+			if (key.IsKeyDown(Keys.Up))		newRotation.X = -rotation.X;
+			if (key.IsKeyDown(Keys.Down))	newRotation.X = +rotation.X;
+			if (key.IsKeyDown(Keys.Left))	newRotation.Y = -rotation.Y;
+			if (key.IsKeyDown(Keys.Right))	newRotation.Y = +rotation.Y;
 
-			ViewMatrix = ViewMatrix * Matrix.CreateRotationX(tempRotation.X) * Matrix.CreateRotationY(tempRotation.Y) * Matrix.CreateTranslation(tempMovement);
-
-			position += tempMovement;
-			direction += tempRotation;
-		}
-
-		public void SetEffects(BasicEffect basicEffect)
-		{
-			basicEffect.View = ViewMatrix;
-			basicEffect.Projection = ProjectionMatrix;
-			basicEffect.World = WorldMatrix;
-		}
-
-		public void Draw(Terrain terrain)
-		{
-			SetEffects(terrain.basicEffect);
-			foreach (EffectPass pass in terrain.basicEffect.CurrentTechnique.Passes)
-			{
-				pass.Apply();
-				terrain.Draw();
-			}
+			ViewMatrix = 
+				ViewMatrix * 
+				Matrix.CreateRotationX(newRotation.X) * 
+				Matrix.CreateRotationY(newRotation.Y) * 
+				Matrix.CreateTranslation(newPosition);
 		}
 	}
 }
