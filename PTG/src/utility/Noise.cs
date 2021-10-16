@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PTG.src.utility
+﻿namespace PTG.src.utility
 {
-	class Noise
+	public class Noise
 	{
 	}
 }
