@@ -37,6 +37,7 @@ namespace PTG.src.world
 		{
 			heights = new float[height, width];
 
+			/*
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
@@ -44,6 +45,9 @@ namespace PTG.src.world
 					heights[y, x] = RandomHelper.RandFloat();
 				}
 			}
+			*/
+
+			heights = Noise.PerlinNoise(width, height, 7, maximum: 70f);
 		}
 
 		public void SetIndices()
