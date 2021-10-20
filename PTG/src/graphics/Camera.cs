@@ -15,7 +15,7 @@ namespace PTG.src.world
 		public Camera(Vector3 position, Vector3 target, Vector3 speed, Vector3 worldPosition)
 		{
 			this.speed = speed;
-			rotation = speed * 0.005f;
+			rotation = speed * 0.02f;
 
 			ViewMatrix = Matrix.CreateLookAt(position, target, Vector3.Up);
 			ProjectionMatrix = Matrix.CreatePerspective(1f, 1f, 1.0f, 1000.0f);
@@ -29,19 +29,21 @@ namespace PTG.src.world
 
 			KeyboardState key = Keyboard.GetState();
 
+			float delta = (float) gameTime.ElapsedGameTime.TotalMilliseconds;
+
 			// Movement
-			if (key.IsKeyDown(Keys.A)) newPosition.X = +speed.X;
-			if (key.IsKeyDown(Keys.D)) newPosition.X = -speed.X;
-			if (key.IsKeyDown(Keys.F)) newPosition.Y = +speed.Y;
-			if (key.IsKeyDown(Keys.R)) newPosition.Y = -speed.Y;
-			if (key.IsKeyDown(Keys.W)) newPosition.Z = +speed.Z;
-			if (key.IsKeyDown(Keys.S)) newPosition.Z = -speed.Z;
+			if (key.IsKeyDown(Keys.A)) newPosition.X = +speed.X * delta;
+			if (key.IsKeyDown(Keys.D)) newPosition.X = -speed.X * delta;
+			if (key.IsKeyDown(Keys.F)) newPosition.Y = +speed.Y * delta;
+			if (key.IsKeyDown(Keys.R)) newPosition.Y = -speed.Y * delta;
+			if (key.IsKeyDown(Keys.W)) newPosition.Z = +speed.Z * delta;
+			if (key.IsKeyDown(Keys.S)) newPosition.Z = -speed.Z * delta;
 
 			// Rotation
-			if (key.IsKeyDown(Keys.Up))		newRotation.X = -rotation.X;
-			if (key.IsKeyDown(Keys.Down))	newRotation.X = +rotation.X;
-			if (key.IsKeyDown(Keys.Left))	newRotation.Y = -rotation.Y;
-			if (key.IsKeyDown(Keys.Right))	newRotation.Y = +rotation.Y;
+			if (key.IsKeyDown(Keys.Up))		newRotation.X = -rotation.X * delta;
+			if (key.IsKeyDown(Keys.Down))	newRotation.X = +rotation.X * delta;
+			if (key.IsKeyDown(Keys.Left))	newRotation.Y = -rotation.Y * delta;
+			if (key.IsKeyDown(Keys.Right))	newRotation.Y = +rotation.Y * delta;
 
 			ViewMatrix = 
 				ViewMatrix * 

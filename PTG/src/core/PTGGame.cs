@@ -51,9 +51,9 @@ namespace PTG
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            camera = new Camera(new Vector3(-100, 100, 0), new Vector3(0, 0, 0), new Vector3(0.025f, 0.01f, 0.025f), new Vector3(0, -100, 85));
+            camera = new Camera(new Vector3(-100, 100, 0), new Vector3(0, 0, 0), new Vector3(0.05f), new Vector3(0, -100, 85));
             
-            terrain = new Terrain(256, 256);
+            terrain = new Terrain(1024, 1024);
             terrain.Generate();
             terrain.SetEffect(new BasicEffect(GraphicsDevice));
         }
