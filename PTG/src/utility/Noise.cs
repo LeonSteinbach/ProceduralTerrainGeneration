@@ -40,7 +40,7 @@ namespace PTG.src.utility
             {
                 for (int x = 0; x < height; x++)
                 {
-                    baseNoise[x, y] = RandomHelper.RandFloat();
+                    baseNoise[y, x] = RandomHelper.RandFloat();
                 }
             }
 

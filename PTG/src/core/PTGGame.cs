@@ -53,7 +53,7 @@ namespace PTG
 
             camera = new Camera(new Vector3(-100, 100, 0), new Vector3(0, 0, 0), new Vector3(0.05f), new Vector3(0, -100, 85));
             
-            terrain = new Terrain(1024, 1024);
+            terrain = new Terrain(2048, 2048);
             terrain.Generate();
             terrain.SetEffect(new BasicEffect(GraphicsDevice));
         }
