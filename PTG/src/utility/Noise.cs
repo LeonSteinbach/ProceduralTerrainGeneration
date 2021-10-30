@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace PTG.src.utility
+﻿namespace PTG.src.utility
 {
 	public class Noise
 	{
