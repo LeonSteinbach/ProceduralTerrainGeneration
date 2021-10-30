@@ -53,9 +53,8 @@ namespace PTG
 
             camera = new Camera(new Vector3(-100, 100, 0), new Vector3(0, 0, 0), new Vector3(0.05f), new Vector3(0, -100, 85));
             
-            terrain = new Terrain(2048, 2048);
+            terrain = new Terrain(256, 256, Content.Load<Effect>("effects"), GraphicsDevice);
             terrain.Generate();
-            terrain.SetEffect(new BasicEffect(GraphicsDevice));
         }
 
         protected override void Update(GameTime gameTime)
@@ -69,11 +68,7 @@ namespace PTG
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
-
             terrain.Render(camera, GraphicsDevice);
-
-            spriteBatch.End();
 
             base.Draw(gameTime);
         }

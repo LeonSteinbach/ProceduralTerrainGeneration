@@ -18,7 +18,7 @@ namespace PTG.src.world
 			rotation = speed * 0.02f;
 
 			ViewMatrix = Matrix.CreateLookAt(position, target, Vector3.Up);
-			ProjectionMatrix = Matrix.CreatePerspective(1f, 1f, 1.0f, 1000.0f);
+			ProjectionMatrix = Matrix.CreatePerspective(MathHelper.PiOver4, 1f, 1f, 10000f);
 			WorldMatrix = Matrix.CreateTranslation(worldPosition);
 		}
 
