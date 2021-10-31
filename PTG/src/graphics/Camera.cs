@@ -3,53 +3,66 @@ using Microsoft.Xna.Framework.Input;
 
 namespace PTG.src.world
 {
-	public class Camera
-	{
-		public Matrix ViewMatrix { private set; get; }
-		public Matrix ProjectionMatrix { private set; get; }
-		public Matrix WorldMatrix { private set; get; }
+    public class Camera
+    {
+        public Matrix View { get; private set; }
+        public Matrix Projection { get; private set; }
 
-		Vector3 speed;
-		Vector3 rotation;
+        private Vector3 cameraPosition;
+        private Vector3 cameraDirection;
+        private Vector3 cameraUp;
 
-		public Camera(Vector3 position, Vector3 target, Vector3 speed, Vector3 worldPosition)
-		{
-			this.speed = speed;
-			rotation = speed * 0.02f;
+        float speed = 0.1f;
+        float rotateSpeed = 0.0025f;
 
-			ViewMatrix = Matrix.CreateLookAt(position, target, Vector3.Up);
-			ProjectionMatrix = Matrix.CreatePerspective(MathHelper.PiOver4, 1f, 1f, 10000f);
-			WorldMatrix = Matrix.CreateTranslation(worldPosition);
-		}
+        MouseState prevMouseState;
 
-		public void Update(GameTime gameTime)
-		{
-			Vector3 newPosition = Vector3.Zero;
-			Vector3 newRotation = Vector3.Zero;
+        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
+        {
+            cameraPosition = pos;
+            cameraDirection = target - pos;
+            cameraDirection.Normalize();
+            cameraUp = up;
+            CreateLookAt();
 
-			KeyboardState key = Keyboard.GetState();
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, 1200f / 800f, 1, 10000);
+        }
 
-			float delta = (float) gameTime.ElapsedGameTime.TotalMilliseconds;
+        public void Initialize()
+        {
+            Mouse.SetPosition(600, 400);
 
-			// Movement
-			if (key.IsKeyDown(Keys.A)) newPosition.X = +speed.X * delta;
-			if (key.IsKeyDown(Keys.D)) newPosition.X = -speed.X * delta;
-			if (key.IsKeyDown(Keys.F)) newPosition.Y = +speed.Y * delta;
-			if (key.IsKeyDown(Keys.R)) newPosition.Y = -speed.Y * delta;
-			if (key.IsKeyDown(Keys.W)) newPosition.Z = +speed.Z * delta;
-			if (key.IsKeyDown(Keys.S)) newPosition.Z = -speed.Z * delta;
+            prevMouseState = Mouse.GetState();
+        }
 
-			// Rotation
-			if (key.IsKeyDown(Keys.Up))		newRotation.X = -rotation.X * delta;
-			if (key.IsKeyDown(Keys.Down))	newRotation.X = +rotation.X * delta;
-			if (key.IsKeyDown(Keys.Left))	newRotation.Y = -rotation.Y * delta;
-			if (key.IsKeyDown(Keys.Right))	newRotation.Y = +rotation.Y * delta;
+        public void Update(GameTime gameTime)
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+                cameraPosition += cameraDirection * speed;
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+                cameraPosition -= cameraDirection * speed;
 
-			ViewMatrix = 
-				ViewMatrix * 
-				Matrix.CreateRotationX(newRotation.X) * 
-				Matrix.CreateRotationY(newRotation.Y) * 
-				Matrix.CreateTranslation(newPosition);
-		}
-	}
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+                cameraPosition += Vector3.Cross(cameraUp, cameraDirection) * speed;
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+                cameraPosition -= Vector3.Cross(cameraUp, cameraDirection) * speed;
+
+            // Rotation in the world
+            cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(cameraUp, (-MathHelper.PiOver4 * rotateSpeed) * (Mouse.GetState().X - prevMouseState.X)));
+
+            cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), (MathHelper.PiOver4 / 100) * (Mouse.GetState().Y - prevMouseState.Y)));
+            cameraUp = Vector3.Transform(cameraUp, Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), (MathHelper.PiOver4 / 100) * (Mouse.GetState().Y - prevMouseState.Y)));
+
+            // Reset prevMouseState
+            prevMouseState = Mouse.GetState();
+
+            CreateLookAt();
+        }
+
+        private void CreateLookAt()
+        {
+            View = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
+        }
+
+    }
 }

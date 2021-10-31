@@ -117,9 +117,9 @@ namespace PTG.src.world
 			effect.CurrentTechnique = effect.Techniques["Colored"];
 
 			// Transformations
-			effect.Parameters["xView"].SetValue(camera.ViewMatrix);
-			effect.Parameters["xProjection"].SetValue(camera.ProjectionMatrix);
-			effect.Parameters["xWorld"].SetValue(camera.WorldMatrix);
+			effect.Parameters["xView"].SetValue(camera.View);
+			effect.Parameters["xProjection"].SetValue(camera.Projection);
+			effect.Parameters["xWorld"].SetValue(Matrix.Identity);
 
 			// Lighting
 			Vector3 light = new Vector3(1.0f, -0.1f, -0.1f);
