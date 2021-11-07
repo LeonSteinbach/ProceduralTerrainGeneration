@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace PTG.src.world
+namespace PTG.graphics
 {
     public class Camera
     {
         public Matrix View { get; private set; }
-        public Matrix Projection { get; private set; }
+        public Matrix Projection { get; }
 
         private Vector3 cameraPosition;
         private Vector3 cameraDirection;
@@ -15,9 +15,9 @@ namespace PTG.src.world
         float speed = 0.1f;
         float rotateSpeed = 0.0025f;
 
-        MouseState prevMouseState;
+        private MouseState prevMouseState;
 
-        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
+        public Camera(Vector3 pos, Vector3 target, Vector3 up)
         {
             cameraPosition = pos;
             cameraDirection = target - pos;

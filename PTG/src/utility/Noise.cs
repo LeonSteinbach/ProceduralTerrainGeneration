@@ -1,4 +1,4 @@
-﻿namespace PTG.src.utility
+﻿namespace PTG.utility
 {
 	public class Noise
 	{

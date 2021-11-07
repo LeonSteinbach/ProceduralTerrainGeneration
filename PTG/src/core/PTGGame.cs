@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using PTG.src.world;
+using PTG.graphics;
+using PTG.world;
 
-namespace PTG
+namespace PTG.core
 {
-    public class PTGGame : Game
+    public class PtgGame : Game
     {
         private readonly GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
@@ -12,7 +13,7 @@ namespace PTG
         private Camera camera;
         private Terrain terrain;
 
-        public PTGGame()
+        public PtgGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "res";
@@ -51,7 +52,7 @@ namespace PTG
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            camera = new Camera(this, new Vector3(-100f, 100f, 0f), new Vector3(0, 0, 0), Vector3.Up);
+            camera = new Camera(new Vector3(-100f, 100f, 0f), new Vector3(0, 0, 0), Vector3.Up);
             camera.Initialize();
 
             terrain = new Terrain(256, 256, Content.Load<Effect>("effects"), GraphicsDevice);
@@ -68,6 +69,10 @@ namespace PTG
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+
+            spriteBatch.Begin();
+
+            spriteBatch.End();
 
             terrain.Render(camera);
 

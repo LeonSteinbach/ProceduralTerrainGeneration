@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace PTG.src.utility
+namespace PTG.utility
 {
 	public static class MathUtil
 	{
@@ -45,12 +45,12 @@ namespace PTG.src.utility
             return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
         }
 
-        public static Vector2 IsoToOrtho(Vector2 position)
+        public static Vector2 IsometricToOrthogonal(Vector2 position)
         {
             return new Vector2((2 * position.Y + position.X) / 2, (2 * position.Y - position.X) / 2);
         }
 
-        public static Vector2 OrthoToIso(Vector2 position)
+        public static Vector2 OrthogonalToIsometric(Vector2 position)
         {
             return new Vector2(position.X - position.Y, (position.X + position.Y) / 2);
         }

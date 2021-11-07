@@ -1,24 +1,25 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using PTG.src.utility;
+using PTG.utility;
+using PTG.graphics;
 
-namespace PTG.src.world
+namespace PTG.world
 {
 	public class Terrain
 	{
-		private int width, height;
+		private readonly int width, height;
 
 		private VertexPositionColorNormal[] vertices;
 		private ushort[] indices;
 
 		private float[,] heightMap;
 
-		VertexBuffer vertexBuffer;
-		IndexBuffer indexBuffer;
+		private VertexBuffer vertexBuffer;
+		private IndexBuffer indexBuffer;
 
-		GraphicsDevice device;
+		private readonly GraphicsDevice device;
 
-		Effect effect;
+		private readonly Effect effect;
 
 		public Terrain(int width, int height, Effect effect, GraphicsDevice device)
 		{

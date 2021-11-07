@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PTG.src.utility
+namespace PTG.utility
 {
     public class RandomHelper
     {
