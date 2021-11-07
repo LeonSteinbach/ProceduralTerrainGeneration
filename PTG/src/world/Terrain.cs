@@ -11,7 +11,7 @@ namespace PTG.src.world
 		private VertexPositionColorNormal[] vertices;
 		private ushort[] indices;
 
-		private float[,] heights;
+		private float[,] heightMap;
 
 		VertexBuffer vertexBuffer;
 		IndexBuffer indexBuffer;
@@ -41,7 +41,7 @@ namespace PTG.src.world
 
 		public void SetHeights()
 		{
-			heights = Noise.PerlinNoise(width, height, 6, maximum: 40f);
+			heightMap = Noise.PerlinNoise(width, height, 6, maximum: 40f);
 		}
 
 		public void SetIndices()
@@ -73,7 +73,7 @@ namespace PTG.src.world
 			{
 				for (int x = 0; x < width; x++)
 				{
-					vertices[x + y * width].Position = new Vector3(x, heights[x, y], -y);
+					vertices[x + y * width].Position = new Vector3(x, heightMap[x, y], -y);
 					vertices[x + y * width].Color = Color.White;
 				}
 			}
@@ -112,7 +112,7 @@ namespace PTG.src.world
 			indexBuffer.SetData(indices);
 		}
 
-		public void Render(Camera camera, GraphicsDevice graphicsDevice)
+		public void Render(Camera camera)
 		{
 			effect.CurrentTechnique = effect.Techniques["Colored"];
 

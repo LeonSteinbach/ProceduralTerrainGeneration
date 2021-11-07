@@ -69,7 +69,7 @@ namespace PTG
         {
             GraphicsDevice.Clear(Color.Black);
 
-            terrain.Render(camera, GraphicsDevice);
+            terrain.Render(camera);
 
             base.Draw(gameTime);
         }
