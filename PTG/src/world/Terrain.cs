@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
 using PTG.graphics;
@@ -13,6 +15,7 @@ namespace PTG.world
 		private uint[] indices;
 
 		private float[,] heightMap;
+		private float[,] particleMap;
 
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -46,6 +49,10 @@ namespace PTG.world
 		{
 			heightMap = Noise.PerlinNoise(width, height, 10, maximum: width / 2f);
 
+			particleMap = new float[width, height];
+
+			CreateParticles();
+
 			SetWaterLevel(200);
 		}
 
@@ -58,6 +65,67 @@ namespace PTG.world
 					if (heightMap[x, y] <= level)
 					{
 						heightMap[x, y] = level;
+					}
+				}
+			}
+		}
+
+		public void CreateParticles()
+		{
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					// Initialize particle map
+					particleMap[x, y] = heightMap[x, y] / width * 2f;
+				}
+			}
+		}
+
+		public void Erode()
+		{
+			// Erosion iteration
+			for (int n = 0; n < 1; n++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					for (int x = 0; x < width; x++)
+					{
+						int dx = x;
+						int dy = y;
+						float diff = 0;
+
+						// Get steepest neighbor
+						for (int j = y - 1; j <= y + 1; j++)
+						{
+							if (j < 0 || j >= height) continue;
+							for (int i = x - 1; i <= x + 1; i++)
+							{
+								if (i < 0 || i >= width) continue;
+								if (y == j && x == i) continue;
+
+								float newDiff = heightMap[x, y] - heightMap[i, j];
+								if (newDiff >= diff)
+								{
+									diff = newDiff;
+									dx = i;
+									dy = j;
+								}
+							}
+						}
+						
+						if (diff > 1f)
+						{
+							// Erode
+							heightMap[x, y] -= Math.Min(diff, particleMap[x, y]);
+
+							// Deposit
+							heightMap[dx, dy] += Math.Min(diff, particleMap[x, y]) * 1f;
+
+							// Update particle map
+							particleMap[dx, dy] = Math.Min(diff, particleMap[x, y]);
+							particleMap[x, y] = 0;
+						}
 					}
 				}
 			}
@@ -99,7 +167,7 @@ namespace PTG.world
 			}
 		}
 
-		private void CalculateNormals()
+		public void CalculateNormals()
 		{
 			for (int i = 0; i < vertices.Length; i++)
 				vertices[i].Normal = Vector3.Zero;
@@ -123,7 +191,7 @@ namespace PTG.world
 				vertices[i].Normal.Normalize();
 		}
 
-		private void CopyToBuffers()
+		public void CopyToBuffers()
 		{
 			vertexBuffer = new VertexBuffer(device, VertexPositionNormalTexture.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
 			vertexBuffer.SetData(vertices);

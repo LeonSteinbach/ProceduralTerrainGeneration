@@ -78,6 +78,22 @@ namespace PTG.core
                 terrain.Generate();
             }
 
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                terrain.CreateParticles();
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.E))
+            {
+                terrain.Erode();
+
+                terrain.SetVertices();
+                terrain.SetIndices();
+                terrain.CalculateNormals();
+
+                terrain.CopyToBuffers();
+            }
+
             base.Update(gameTime);
         }
 
