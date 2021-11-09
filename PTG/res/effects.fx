@@ -87,9 +87,9 @@ technique Pretransformed
 VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float4 inColor : COLOR)
 {
 	//float4 Color = xSeasonColor;
-	float4 Red = float4(1.0f, 0.0f, 0.0f, 0.0f);
-	float4 Green = float4(0.0f, 1.0f, 0.0f, 0.0f);
-	float4 Blue = float4(0.0f, 0.0f, 1.0f, 0.0f);
+	float4 Red = float4(1.0f, 0.0f, 0.0f, 1.0f);
+	float4 Green = float4(0.0f, 1.0f, 0.0f, 1.0f);
+	float4 Blue = float4(0.0f, 0.0f, 1.0f, 1.0f);
 
 	VertexToPixel Output = (VertexToPixel)0;
 	float4x4 preViewProjection = mul(xView, xProjection);
