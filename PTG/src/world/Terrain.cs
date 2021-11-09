@@ -45,6 +45,22 @@ namespace PTG.world
 		public void SetHeights()
 		{
 			heightMap = Noise.PerlinNoise(width, height, 10, maximum: width / 2f);
+
+			SetWaterLevel(200);
+		}
+
+		private void SetWaterLevel(float level)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					if (heightMap[x, y] <= level)
+					{
+						heightMap[x, y] = level;
+					}
+				}
+			}
 		}
 
 		public void SetIndices()

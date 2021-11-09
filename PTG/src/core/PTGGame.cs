@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
 using PTG.world;
 
@@ -66,6 +67,16 @@ namespace PTG.core
         protected override void Update(GameTime gameTime)
         {
             camera.Update(gameTime);
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                Exit();
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.N))
+            {
+                terrain.Generate();
+            }
 
             base.Update(gameTime);
         }
