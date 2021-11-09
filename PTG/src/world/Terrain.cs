@@ -9,7 +9,7 @@ namespace PTG.world
 	{
 		private readonly int width, height;
 
-		private VertexPositionColorNormal[] vertices;
+		private VertexPositionNormalTexture[] vertices;
 		private uint[] indices;
 
 		private float[,] heightMap;
@@ -20,12 +20,14 @@ namespace PTG.world
 		private readonly GraphicsDevice device;
 
 		private readonly Effect effect;
+		private readonly Texture2D texture;
 
-		public Terrain(int width, int height, Effect effect, GraphicsDevice device)
+		public Terrain(int width, int height, Effect effect, Texture2D texture, GraphicsDevice device)
 		{
 			this.width = width;
 			this.height = height;
 			this.effect = effect;
+			this.texture = texture;
 			this.device = device;
 		}
 
@@ -68,14 +70,15 @@ namespace PTG.world
 
 		public void SetVertices()
 		{
-			vertices = new VertexPositionColorNormal[width * height];
+			vertices = new VertexPositionNormalTexture[width * height];
 
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
 				{
 					vertices[x + y * width].Position = new Vector3(x, heightMap[x, y], -y);
-					vertices[x + y * width].Color = Color.White;
+					vertices[x + y * width].TextureCoordinate = 
+						new Vector2(MathUtil.Constrain(x, 0, width, 0, 256), MathUtil.Constrain(y, 0, width, 0, 256));
 				}
 			}
 		}
@@ -106,7 +109,7 @@ namespace PTG.world
 
 		private void CopyToBuffers()
 		{
-			vertexBuffer = new VertexBuffer(device, VertexPositionColorNormal.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
+			vertexBuffer = new VertexBuffer(device, VertexPositionNormalTexture.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
 			vertexBuffer.SetData(vertices);
 			
 			indexBuffer = new IndexBuffer(device, IndexElementSize.ThirtyTwoBits, indices.Length, BufferUsage.WriteOnly);
@@ -115,12 +118,14 @@ namespace PTG.world
 
 		public void Render(Camera camera)
 		{
-			effect.CurrentTechnique = effect.Techniques["Colored"];
+			effect.CurrentTechnique = effect.Techniques["SeasonColored"];
+			//effect.CurrentTechnique = effect.Techniques["Textured"];
 
 			// Transformations
 			effect.Parameters["xView"].SetValue(camera.View);
 			effect.Parameters["xProjection"].SetValue(camera.Projection);
 			effect.Parameters["xWorld"].SetValue(Matrix.Identity);
+			effect.Parameters["xTexture"].SetValue(texture);
 
 			// Lighting
 			Vector3 light = new Vector3(1.0f, -0.1f, -0.1f);

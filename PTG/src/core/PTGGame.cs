@@ -59,7 +59,7 @@ namespace PTG.core
             camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
 
-            terrain = new Terrain(mapSize, mapSize * 2, Content.Load<Effect>("effects"), GraphicsDevice);
+            terrain = new Terrain(mapSize, mapSize * 2, Content.Load<Effect>("effects"), Content.Load<Texture2D>("texture"), GraphicsDevice);
             terrain.Generate();
         }
 

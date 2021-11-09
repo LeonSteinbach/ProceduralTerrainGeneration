@@ -86,8 +86,9 @@ technique Pretransformed
 
 VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float4 inColor : COLOR)
 {
-	float4 Color = xSeasonColor;
-	float4 Sand = float4(0.96f, 0.91f, 0.7f, 0.0f);
+	//float4 Color = xSeasonColor;
+	float4 Red = float4(1.0f, 0.0f, 0.0f, 0.0f);
+	float4 Green = float4(0.0f, 1.0f, 0.0f, 0.0f);
 	float4 Blue = float4(0.0f, 0.0f, 1.0f, 0.0f);
 
 	VertexToPixel Output = (VertexToPixel)0;
@@ -96,17 +97,17 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 
 	Output.Position = mul(inPos, preWorldViewProjection);
 
-	if (inPos[1] < 1.0f && inPos[1] != 0.001f)
+	if (inPos[1] < 512.0f && inPos[1] >= 256.0f)
 	{
-		Output.Color = inColor;
+		Output.Color = Red;
 	}
-	else if (inPos[1] == 0.001f)
+	else if (inPos[1] < 256.0f && inPos[1] >= 128.0f)
 	{
-		Output.Color = Blue;
+		Output.Color = Green;
 	}
 	else
 	{
-		Output.Color = Color;
+		Output.Color = Blue;
 	}
 
 	float3 Normal = normalize(mul(normalize(inNormal), xWorld));
