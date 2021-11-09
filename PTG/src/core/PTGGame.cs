@@ -45,6 +45,8 @@ namespace PTG.core
             graphics.PreferredBackBufferHeight = windowSize.Y;
             graphics.ApplyChanges();
 
+            GraphicsDevice.DepthStencilState = new DepthStencilState {DepthBufferEnable = true};
+
             base.Initialize();
         }
 
@@ -52,10 +54,12 @@ namespace PTG.core
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            camera = new Camera(new Vector3(-100f, 100f, 0f), new Vector3(0, 0, 0), Vector3.Up);
+            int mapSize = 1024;
+
+            camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
 
-            terrain = new Terrain(256, 256, Content.Load<Effect>("effects"), GraphicsDevice);
+            terrain = new Terrain(mapSize, mapSize * 2, Content.Load<Effect>("effects"), GraphicsDevice);
             terrain.Generate();
         }
 

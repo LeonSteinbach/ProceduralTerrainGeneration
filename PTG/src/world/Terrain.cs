@@ -10,7 +10,7 @@ namespace PTG.world
 		private readonly int width, height;
 
 		private VertexPositionColorNormal[] vertices;
-		private ushort[] indices;
+		private uint[] indices;
 
 		private float[,] heightMap;
 
@@ -42,12 +42,12 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 6, maximum: 40f);
+			heightMap = Noise.PerlinNoise(width, height, 10, maximum: width / 2f);
 		}
 
 		public void SetIndices()
 		{
-			indices = new ushort[6 * (width - 1) * (height - 1)];
+			indices = new uint[6 * (width - 1) * (height - 1)];
 
 			int i = 0;
 			for (int y = 0; y < height - 1; y++)
@@ -55,12 +55,12 @@ namespace PTG.world
 				for (int x = 0; x < width - 1; x++)
 				{
 					// Create triangles
-					indices[i] = (ushort)(x + (y + 1) * width);           // up left
-					indices[i + 1] = (ushort)(x + y * width + 1);         // down right
-					indices[i + 2] = (ushort)(x + y * width);             // down left
-					indices[i + 3] = (ushort)(x + (y + 1) * width);       // up left
-					indices[i + 4] = (ushort)(x + (y + 1) * width + 1);   // up right
-					indices[i + 5] = (ushort)(x + y * width + 1);         // down right
+					indices[i] = (uint)(x + (y + 1) * width);           // up left
+					indices[i + 1] = (uint)(x + y * width + 1);         // down right
+					indices[i + 2] = (uint)(x + y * width);             // down left
+					indices[i + 3] = (uint)(x + (y + 1) * width);       // up left
+					indices[i + 4] = (uint)(x + (y + 1) * width + 1);   // up right
+					indices[i + 5] = (uint)(x + y * width + 1);         // down right
 					i += 6;
 				}
 			}
@@ -87,9 +87,9 @@ namespace PTG.world
 
 			for (int i = 0; i < indices.Length / 3; i++)
 			{
-				int index1 = indices[i * 3];
-				int index2 = indices[i * 3 + 1];
-				int index3 = indices[i * 3 + 2];
+				uint index1 = indices[i * 3];
+				uint index2 = indices[i * 3 + 1];
+				uint index3 = indices[i * 3 + 2];
 
 				Vector3 side1 = vertices[index1].Position - vertices[index3].Position;
 				Vector3 side2 = vertices[index1].Position - vertices[index2].Position;
@@ -108,8 +108,8 @@ namespace PTG.world
 		{
 			vertexBuffer = new VertexBuffer(device, VertexPositionColorNormal.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
 			vertexBuffer.SetData(vertices);
-
-			indexBuffer = new IndexBuffer(device, typeof(ushort), indices.Length, BufferUsage.WriteOnly);
+			
+			indexBuffer = new IndexBuffer(device, IndexElementSize.ThirtyTwoBits, indices.Length, BufferUsage.WriteOnly);
 			indexBuffer.SetData(indices);
 		}
 
@@ -143,7 +143,6 @@ namespace PTG.world
 					0,
 					0,
 					vertexBuffer.VertexCount);
-
 			}
 		}
 	}

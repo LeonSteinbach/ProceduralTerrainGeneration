@@ -10,12 +10,10 @@ namespace PTG.graphics
 
         private Vector3 cameraPosition;
         private Vector3 cameraDirection;
-        private Vector3 cameraUp;
+        private readonly Vector3 cameraUp;
 
         float speed = 0.1f;
-        float rotateSpeed = 0.0025f;
-
-        private MouseState prevMouseState;
+        float rotateSpeed = 0.005f;
 
         public Camera(Vector3 pos, Vector3 target, Vector3 up)
         {
@@ -31,30 +29,71 @@ namespace PTG.graphics
         public void Initialize()
         {
             Mouse.SetPosition(600, 400);
-
-            prevMouseState = Mouse.GetState();
         }
 
         public void Update(GameTime gameTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-                cameraPosition += cameraDirection * speed;
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-                cameraPosition -= cameraDirection * speed;
+	        float dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-                cameraPosition += Vector3.Cross(cameraUp, cameraDirection) * speed;
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-                cameraPosition -= Vector3.Cross(cameraUp, cameraDirection) * speed;
+            // Movement
+	        if (Keyboard.GetState().IsKeyDown(Keys.W))
+	        {
+		        cameraPosition.X += cameraDirection.X * speed * dt;
+		        cameraPosition.Z += cameraDirection.Z * speed * dt;
+            }
 
-            // Rotation in the world
-            cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(cameraUp, (-MathHelper.PiOver4 * rotateSpeed) * (Mouse.GetState().X - prevMouseState.X)));
+	        if (Keyboard.GetState().IsKeyDown(Keys.S))
+	        {
+		        cameraPosition.X -= cameraDirection.X * speed * dt;
+		        cameraPosition.Z -= cameraDirection.Z * speed * dt;
+            }
 
-            cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), (MathHelper.PiOver4 / 100) * (Mouse.GetState().Y - prevMouseState.Y)));
-            cameraUp = Vector3.Transform(cameraUp, Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), (MathHelper.PiOver4 / 100) * (Mouse.GetState().Y - prevMouseState.Y)));
+	        if (Keyboard.GetState().IsKeyDown(Keys.A))
+	        {
+		        cameraPosition.X += Vector3.Transform(cameraDirection, Matrix.CreateRotationY(MathHelper.PiOver2)).X * speed * dt;
+                cameraPosition.Z += Vector3.Transform(cameraDirection, Matrix.CreateRotationY(MathHelper.PiOver2)).Z * speed * dt;
+            }
 
-            // Reset prevMouseState
-            prevMouseState = Mouse.GetState();
+	        if (Keyboard.GetState().IsKeyDown(Keys.D))
+	        {
+		        cameraPosition.X -= Vector3.Transform(cameraDirection, Matrix.CreateRotationY(MathHelper.PiOver2)).X * speed * dt;
+		        cameraPosition.Z -= Vector3.Transform(cameraDirection, Matrix.CreateRotationY(MathHelper.PiOver2)).Z * speed * dt;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.R))
+	        {
+		        cameraPosition.Y += speed * dt;
+            }
+
+	        if (Keyboard.GetState().IsKeyDown(Keys.F))
+	        {
+		        cameraPosition.Y -= speed * dt;
+	        }
+
+            // Rotation
+	        if (Keyboard.GetState().IsKeyDown(Keys.Left))
+	        {
+		        cameraDirection.X += Vector3.Transform(cameraDirection, Matrix.CreateRotationY(1f)).X * speed * rotateSpeed * dt;
+                cameraDirection.Z += Vector3.Transform(cameraDirection, Matrix.CreateRotationY(1f)).Z * speed * rotateSpeed * dt;
+                cameraDirection.Normalize();
+	        }
+
+	        if (Keyboard.GetState().IsKeyDown(Keys.Right))
+	        {
+		        cameraDirection.X -= Vector3.Transform(cameraDirection, Matrix.CreateRotationY(1f)).X * speed * rotateSpeed * dt;
+                cameraDirection.Z -= Vector3.Transform(cameraDirection, Matrix.CreateRotationY(1f)).Z * speed * rotateSpeed * dt;
+                cameraDirection.Normalize();
+            }
+
+	        if (Keyboard.GetState().IsKeyDown(Keys.Up))
+	        {
+		        cameraDirection.Y += Vector3.Transform(cameraDirection, -Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), 1f)).Y * speed * rotateSpeed * dt;
+            }
+
+	        if (Keyboard.GetState().IsKeyDown(Keys.Down))
+	        {
+		        cameraDirection.Y -= Vector3.Transform(cameraDirection, -Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection), 1f)).Y * speed * rotateSpeed * dt;
+            }
 
             CreateLookAt();
         }
