@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
+using PTG.utility;
 using PTG.world;
 
 namespace PTG.core
@@ -55,7 +56,7 @@ namespace PTG.core
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            int mapSize = 1024;
+            int mapSize = 512;
 
             camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
@@ -66,32 +67,35 @@ namespace PTG.core
 
         protected override void Update(GameTime gameTime)
         {
+            Input.Update();
             camera.Update(gameTime);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Input.IsKeyPressed(Keys.Escape))
             {
                 Exit();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.N))
+            if (Input.IsKeyPressed(Keys.N))
             {
                 terrain.Generate();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                terrain.CreateParticles();
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.E))
+            if (Input.IsKeyHold(Keys.E))
             {
                 terrain.Erode();
 
                 terrain.SetVertices();
-                terrain.SetIndices();
                 terrain.CalculateNormals();
 
                 terrain.CopyToBuffers();
+            }
+
+            if (Input.IsKeyReleased(Keys.E))
+            {
+	            terrain.SetVertices();
+	            terrain.CalculateNormals();
+
+	            terrain.CopyToBuffers();
             }
 
             base.Update(gameTime);

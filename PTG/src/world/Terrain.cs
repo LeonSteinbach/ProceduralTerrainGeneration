@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -15,7 +15,8 @@ namespace PTG.world
 		private uint[] indices;
 
 		private float[,] heightMap;
-		private float[,] particleMap;
+		private List<int>[,] erosionBrushIndices;
+		private List<float>[,] erosionBrushWeights;
 
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -37,6 +38,7 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
+			//InitializeBrush();
 
 			SetVertices();
 			SetIndices();
@@ -47,13 +49,9 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 10, maximum: width / 2f);
+			heightMap = Noise.PerlinNoise(width, height, 9, maximum: width / 2f);
 
-			particleMap = new float[width, height];
-
-			CreateParticles();
-
-			SetWaterLevel(200);
+			//SetWaterLevel(100);
 		}
 
 		private void SetWaterLevel(float level)
@@ -70,65 +68,210 @@ namespace PTG.world
 			}
 		}
 
-		public void CreateParticles()
+		public void Erode()
 		{
-			for (int y = 0; y < height; y++)
+			int numIterations = 1000000;
+			int maxLifetime = 100;
+			float inertia = 0.05f;
+			float sedimentCapacityFactor = 4f;
+			float minSedimentCapacity = 0.01f;
+			float gravity = 4;
+			float evaporateSpeed = 0.01f;
+			float depositSpeed = 1.3f;
+			float erodeSpeed = 1.3f;
+
+			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
-				for (int x = 0; x < width; x++)
+				Vector2 pos = new Vector2(
+					RandomHelper.RandFloat() * (width - 1), 
+					RandomHelper.RandFloat() * (height - 1));
+				Vector2 dir = Vector2.Zero;
+				
+				float speed = 1f;
+				float water = 1f;
+				float sediment = 0f;
+
+				for (int lifetime = 0; lifetime < maxLifetime; lifetime++)
 				{
-					// Initialize particle map
-					particleMap[x, y] = heightMap[x, y] / width * 2f;
+					Point node = new Point((int) pos.X, (int) pos.Y);
+					Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
+
+					if (node.X < 0 || node.X >= width - 1 || node.Y < 0 || node.Y >= height - 1)
+						break;
+
+					// Calculate height and gradient using linear interpolation
+					Vector2 gradient = CalculateGradient(pos);
+					float posHeight = CalculateHeight(pos);
+
+					// Update the droplet's direction and position
+					dir.X = gradient.X == 0 && gradient.Y == 0 ? 0 : dir.X * inertia - gradient.X * (1 - inertia);
+					dir.Y = gradient.X == 0 && gradient.Y == 0 ? 0 : dir.Y * inertia - gradient.Y * (1 - inertia);
+					dir.Normalize();
+
+					pos += dir;
+
+					// Break if position is invalid or the droplet is not moving
+					if (dir.X == 0 && dir.Y == 0 || 
+					    (int) pos.X < 0 || (int) pos.X >= width - 1 || 
+					    (int) pos.Y < 0 || (int) pos.Y >= height - 1)
+						break;
+
+					// Calculate the droplet's new height and the difference in height
+					float newPosHeight = CalculateHeight(pos);
+					float deltaHeight = newPosHeight - posHeight;
+
+					// Calculate the droplet's sediment capacity
+					float sedimentCapacity = Math.Max(
+						-deltaHeight * speed * water * sedimentCapacityFactor,
+						minSedimentCapacity);
+
+					// Deposit
+					if (sediment > sedimentCapacity || deltaHeight > 0)
+					{
+						float amountToDeposit = deltaHeight > 0
+							? Math.Min(deltaHeight, sediment)
+							: (sediment - sedimentCapacity) * depositSpeed;
+
+						if (float.IsNaN(amountToDeposit)) break;
+						sediment -= amountToDeposit;
+
+						// Add the sediment to the four neighbor nodes using linear interpolation
+						heightMap[node.X, node.Y] += amountToDeposit * (1 - offset.X) * (1 - offset.Y);
+						heightMap[node.X + 1, node.Y] += amountToDeposit * offset.X * (1 - offset.Y);
+						heightMap[node.X, node.Y + 1] += amountToDeposit * (1 - offset.X) * offset.Y;
+						heightMap[node.X + 1, node.Y + 1] += amountToDeposit * offset.X * offset.Y;
+					}
+
+					// Erode
+					else
+					{
+						float amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
+						if (float.IsNaN(amountToErode)) break;
+						sediment += amountToErode;
+
+						/*
+						// Use erosion brush to erode from all nodes inside the droplet's erosion radius
+						for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[node.X, node.Y].Count; brushPointIndex++)
+						{
+							int nodeIndexX = erosionBrushIndices[node.X, node.Y][brushPointIndex] / width;
+							int nodeIndexY = erosionBrushIndices[node.X, node.Y][brushPointIndex] % height;
+
+							float weighedErodeAmount = amountToErode * erosionBrushWeights[node.X, node.Y][brushPointIndex];
+							float deltaSediment = (heightMap[nodeIndexX, nodeIndexY] < weighedErodeAmount) ? heightMap[nodeIndexX, nodeIndexY] : weighedErodeAmount;
+							heightMap[nodeIndexX, nodeIndexY] -= deltaSediment;
+							sediment = deltaSediment;
+						}*/
+
+						
+						// Use erosion brush to erode from all nodes inside the droplet's brush radius
+						heightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
+						heightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
+						heightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
+						heightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
+					}
+
+					// Update speed and water content
+					speed = (float) Math.Sqrt(speed * speed + deltaHeight * gravity);
+					water *= 1 - evaporateSpeed;
 				}
 			}
 		}
 
-		public void Erode()
+		private void InitializeBrush()
 		{
-			// Erosion iteration
-			for (int n = 0; n < 1; n++)
+			int radius = 10;
+
+			erosionBrushIndices = new List<int>[width, height];
+			erosionBrushWeights = new List<float>[width, height];
+
+			int[] xOffsets = new int[radius * radius * 4];
+			int[] yOffsets = new int[radius * radius * 4];
+			float[] weights = new float[radius * radius * 4];
+			float weightSum = 0;
+			int addIndex = 0;
+
+			for (int j = 0; j < height; j++)
 			{
-				for (int y = 0; y < height; y++)
+				for (int i = 0; i < width; i++)
 				{
-					for (int x = 0; x < width; x++)
+					int centreX = i;
+					int centreY = j;
+
+					if (centreY <= radius || centreY >= height - radius || centreX <= radius + 1 ||
+					    centreX >= width - radius)
 					{
-						int dx = x;
-						int dy = y;
-						float diff = 0;
-
-						// Get steepest neighbor
-						for (int j = y - 1; j <= y + 1; j++)
+						weightSum = 0;
+						addIndex = 0;
+						for (int y = -radius; y <= radius; y++)
 						{
-							if (j < 0 || j >= height) continue;
-							for (int i = x - 1; i <= x + 1; i++)
+							for (int x = -radius; x <= radius; x++)
 							{
-								if (i < 0 || i >= width) continue;
-								if (y == j && x == i) continue;
-
-								float newDiff = heightMap[x, y] - heightMap[i, j];
-								if (newDiff >= diff)
+								float sqrDst = x * x + y * y;
+								if (sqrDst < radius * radius)
 								{
-									diff = newDiff;
-									dx = i;
-									dy = j;
+									int coordX = centreX + x;
+									int coordY = centreY + y;
+
+									if (coordX >= 0 && coordX < width && coordY >= 0 && coordY < height)
+									{
+										float weight = 1 - (float)Math.Sqrt(sqrDst) / radius;
+										weightSum += weight;
+										weights[addIndex] = weight;
+										xOffsets[addIndex] = x;
+										yOffsets[addIndex] = y;
+										addIndex++;
+									}
 								}
 							}
 						}
-						
-						if (diff > 1f)
-						{
-							// Erode
-							heightMap[x, y] -= Math.Min(diff, particleMap[x, y]);
+					}
 
-							// Deposit
-							heightMap[dx, dy] += Math.Min(diff, particleMap[x, y]) * 1f;
+					int numEntries = addIndex;
+					erosionBrushIndices[i, j] = new List<int>(numEntries);
+					erosionBrushWeights[i, j] = new List<float>(numEntries);
 
-							// Update particle map
-							particleMap[dx, dy] = Math.Min(diff, particleMap[x, y]);
-							particleMap[x, y] = 0;
-						}
+					for (int n = 0; n < numEntries; n++)
+					{
+						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * height + xOffsets[n] + centreX);
+						erosionBrushWeights[i, j].Add(weights[n] / weightSum);
 					}
 				}
 			}
+		}
+
+		private Vector2 CalculateGradient(Vector2 pos)
+		{
+			Point node = new Point((int) pos.X, (int) pos.Y);
+			Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
+
+			float heightNw = heightMap[node.X, node.Y];
+			float heightNe = heightMap[node.X + 1, node.Y];
+			float heightSw = heightMap[node.X, node.Y + 1];
+			float heightSe = heightMap[node.X + 1, node.Y + 1];
+
+			Vector2 gradient = new Vector2(
+				(heightNe - heightNw) * (1 - offset.Y) + (heightSe - heightSw) * offset.Y,
+				(heightSw - heightNw) * (1 - offset.X) + (heightSe - heightNe) * offset.X);
+
+			return gradient;
+		}
+
+		private float CalculateHeight(Vector2 pos)
+		{
+			Point node = new Point((int) pos.X, (int) pos.Y);
+			Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
+
+			float heightNw = heightMap[node.X, node.Y];
+			float heightNe = heightMap[node.X + 1, node.Y];
+			float heightSw = heightMap[node.X, node.Y + 1];
+			float heightSe = heightMap[node.X + 1, node.Y + 1];
+
+			float posHeight = heightNw * (1 - offset.X) * (1 - offset.Y) + 
+			                  heightNe * offset.X * (1 - offset.Y) +
+			                  heightSw * (1 - offset.X) * offset.Y + 
+			                  heightSe * offset.X * offset.Y;
+
+			return posHeight;
 		}
 
 		public void SetIndices()
