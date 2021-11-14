@@ -97,7 +97,7 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 
 	Output.Position = mul(inPos, preWorldViewProjection);
 
-	if (inPos[1] > 130.0f)
+	if (inPos[1] > 0.0f)
 	{
 		Output.Color = Red;
 	}

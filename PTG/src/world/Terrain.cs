@@ -70,14 +70,14 @@ namespace PTG.world
 
 		public void Erode()
 		{
-			int numIterations = 1000000;
+			int numIterations = 100000;
 			int maxLifetime = 100;
 			float inertia = 0.05f;
 			float sedimentCapacityFactor = 4f;
 			float minSedimentCapacity = 0.01f;
-			float gravity = 4;
+			float gravity = 0.1f;
 			float evaporateSpeed = 0.01f;
-			float depositSpeed = 1.3f;
+			float depositSpeed = 0.1f;
 			float erodeSpeed = 1.3f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
@@ -153,13 +153,18 @@ namespace PTG.world
 						// Use erosion brush to erode from all nodes inside the droplet's erosion radius
 						for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[node.X, node.Y].Count; brushPointIndex++)
 						{
-							int nodeIndexX = erosionBrushIndices[node.X, node.Y][brushPointIndex] / width;
+							int nodeIndexX = erosionBrushIndices[node.X, node.Y][brushPointIndex] / width / 2;
 							int nodeIndexY = erosionBrushIndices[node.X, node.Y][brushPointIndex] % height;
+
+							if (nodeIndexX >= width - 1 || nodeIndexY >= height - 1)
+							{
+								break;
+							}
 
 							float weighedErodeAmount = amountToErode * erosionBrushWeights[node.X, node.Y][brushPointIndex];
 							float deltaSediment = (heightMap[nodeIndexX, nodeIndexY] < weighedErodeAmount) ? heightMap[nodeIndexX, nodeIndexY] : weighedErodeAmount;
 							heightMap[nodeIndexX, nodeIndexY] -= deltaSediment;
-							sediment = deltaSediment;
+							sediment += deltaSediment;
 						}*/
 
 						
@@ -179,7 +184,7 @@ namespace PTG.world
 
 		private void InitializeBrush()
 		{
-			int radius = 10;
+			int radius = 8;
 
 			erosionBrushIndices = new List<int>[width, height];
 			erosionBrushWeights = new List<float>[width, height];
@@ -194,6 +199,8 @@ namespace PTG.world
 			{
 				for (int i = 0; i < width; i++)
 				{
+					radius = RandomHelper.RandInt(8, 8);
+
 					int centreX = i;
 					int centreY = j;
 
@@ -232,7 +239,7 @@ namespace PTG.world
 
 					for (int n = 0; n < numEntries; n++)
 					{
-						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * height + xOffsets[n] + centreX);
+						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * width + xOffsets[n] + centreX);
 						erosionBrushWeights[i, j].Add(weights[n] / weightSum);
 					}
 				}

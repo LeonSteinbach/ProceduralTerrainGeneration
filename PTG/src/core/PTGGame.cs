@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Threading;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
@@ -82,7 +83,7 @@ namespace PTG.core
 
             if (Input.IsKeyHold(Keys.E))
             {
-                terrain.Erode();
+	            terrain.Erode();
 
                 terrain.SetVertices();
                 terrain.CalculateNormals();
