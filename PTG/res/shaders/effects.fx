@@ -29,48 +29,81 @@ struct PixelToFrame
 };
 
 //------- Constants --------
-float4x4 xView;
-float4x4 xProjection;
-float4x4 xWorld;
-float4 xSeasonColor;
+float4x4 View;
+float4x4 Projection;
+float4x4 World;
 
-float3 xLightDirection;
-float xAmbient;
-bool xEnableLighting;
-bool xShowNormals;
-float3 xCamPos;
-float3 xCamUp;
-float xPointSpriteSize;
+float3 LightDirection;
+float Ambient;
 
 //------- Texture Samplers --------
 
-texture xTexture0;
 /*
+texture xTexture0;
 texture xTexture1;
 texture xTexture2;
 texture xTexture3;
 */
 
-sampler2D TextureSampler0 = sampler_state { Texture = <xTexture0>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
 /*
+sampler2D TextureSampler0 = sampler_state { Texture = <xTexture0>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
 sampler2D TextureSampler1 = sampler_state { Texture = <xTexture1>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
 sampler2D TextureSampler2 = sampler_state { Texture = <xTexture2>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
 sampler2D TextureSampler3 = sampler_state { Texture = <xTexture3>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
 */
+
+Texture Texture0;
+sampler TextureSampler0 = sampler_state {
+	texture = <Texture0>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = mirror;
+	AddressV = mirror;
+};
+
+Texture Texture1;
+sampler TextureSampler1 = sampler_state {
+	texture = <Texture1>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = wrap;
+	AddressV = wrap;
+};
+
+Texture Texture2;
+sampler TextureSampler2 = sampler_state {
+	texture = <Texture2>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = mirror;
+	AddressV = mirror;
+};
+
+Texture Texture3;
+sampler TextureSampler3 = sampler_state {
+	texture = <Texture3>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = wrap;
+	AddressV = wrap;
+};
 
 
 //------- SeasonColored --------
 
 VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float4 inColor : COLOR)
 {
-	//float4 Color = xSeasonColor;
 	float4 Red = float4(0.7f, 0.7f, 0.9f, 1.0f);
 	float4 Green = float4(0.6f, 0.4f, 0.3f, 1.0f);
 	float4 Blue = float4(0.4f, 0.4f, 1.0f, 1.0f);
 
 	VertexToPixel Output = (VertexToPixel)0;
-	float4x4 preViewProjection = mul(xView, xProjection);
-	float4x4 preWorldViewProjection = mul(xWorld, preViewProjection);
+	float4x4 preViewProjection = mul(View, Projection);
+	float4x4 preWorldViewProjection = mul(World, preViewProjection);
 
 	Output.Position = mul(inPos, preWorldViewProjection);
 
@@ -87,11 +120,8 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 		Output.Color = Blue;
 	}
 
-	float3 Normal = normalize(mul(normalize(inNormal), xWorld));
-	Output.LightingFactor = 1;
-
-	if (xEnableLighting)
-		Output.LightingFactor = dot(Normal, -xLightDirection);
+	float3 Normal = normalize(mul(normalize(inNormal), World));
+	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;
 }
@@ -101,7 +131,7 @@ PixelToFrame SeasonColoredPS(VertexToPixel PSIn)
 	PixelToFrame Output = (PixelToFrame)0;
 
 	Output.Color = PSIn.Color;
-	Output.Color.rgb *= saturate(PSIn.LightingFactor) + xAmbient;
+	Output.Color.rgb *= saturate(PSIn.LightingFactor) + Ambient;
 
 	return Output;
 }
@@ -121,16 +151,14 @@ technique SeasonColored
 VertexToPixel TexturedVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float2 inTexCoords : TEXCOORD0)
 {
 	VertexToPixel Output = (VertexToPixel)0;
-	float4x4 preViewProjection = mul(xView, xProjection);
-	float4x4 preWorldViewProjection = mul(xWorld, preViewProjection);
+	float4x4 preViewProjection = mul(View, Projection);
+	float4x4 preWorldViewProjection = mul(World, preViewProjection);
 
 	Output.Position = mul(inPos, preWorldViewProjection);
 	Output.TextureCoords = inTexCoords;
 
-	float3 Normal = normalize(mul(normalize(inNormal), xWorld));
-	Output.LightingFactor = 1;
-	if (xEnableLighting)
-		Output.LightingFactor = dot(Normal, -xLightDirection);
+	float3 Normal = normalize(mul(normalize(inNormal), World));
+	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;
 }
@@ -155,7 +183,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	if (hw3 < 0) hw3 = 0;
 
 	Output.Color = tex2D(TextureSampler0, PSIn.TextureCoords);
-	Output.Color.rgb *= saturate(PSIn.LightingFactor) + xAmbient;
+	Output.Color.rgb *= saturate(PSIn.LightingFactor) + Ambient;
 
 	return Output;
 }
@@ -164,7 +192,7 @@ technique Textured
 {
 	pass Pass0
 	{
-		VertexShader = compile VS_SHADERMODEL  TexturedVS();
-		PixelShader = compile PS_SHADERMODEL  TexturedPS();
+		VertexShader = compile vs_2_0 TexturedVS();
+		PixelShader = compile ps_2_0 TexturedPS();
 	}
 }

@@ -360,22 +360,22 @@ namespace PTG.world
 		{
 			//effect.CurrentTechnique = effect.Techniques["SeasonColored"];
 			effect.CurrentTechnique = effect.Techniques["Textured"];
+			//effect.CurrentTechnique = effect.Techniques["Multitextured"];
 
 			// Transformations
-			effect.Parameters["xView"].SetValue(camera.View);
-			effect.Parameters["xProjection"].SetValue(camera.Projection);
-			effect.Parameters["xWorld"].SetValue(Matrix.Identity);
+			effect.Parameters["View"].SetValue(camera.View);
+			effect.Parameters["Projection"].SetValue(camera.Projection);
+			effect.Parameters["World"].SetValue(Matrix.Identity);
 
 			// Lighting
 			Vector3 light = new Vector3(1.0f, -0.1f, -0.1f);
 			light.Normalize();
 
-			effect.Parameters["xLightDirection"].SetValue(light);
-			effect.Parameters["xAmbient"].SetValue(0.5f);
-			effect.Parameters["xEnableLighting"].SetValue(true);
+			effect.Parameters["LightDirection"].SetValue(light);
+			effect.Parameters["Ambient"].SetValue(0.5f);
 
 			// Textures
-			effect.Parameters["xTexture0"].SetValue(texture0);
+			effect.Parameters["Texture0"].SetValue(texture0);
 			//effect.Parameters["Texture1"].SetValue(texture1);
 			//effect.Parameters["Texture2"].SetValue(texture2);
 			//effect.Parameters["Texture3"].SetValue(texture3);
