@@ -49,7 +49,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 9, maximum: width / 2f);
+			heightMap = Noise.PerlinNoise(width, height, 12, maximum: width / 2f);
 
 			//SetWaterLevel(100);
 		}
@@ -134,7 +134,7 @@ namespace PTG.world
 
 						if (float.IsNaN(amountToDeposit)) break;
 						sediment -= amountToDeposit;
-
+						
 						// Add the sediment to the four neighbor nodes using linear interpolation
 						heightMap[node.X, node.Y] += amountToDeposit * (1 - offset.X) * (1 - offset.Y);
 						heightMap[node.X + 1, node.Y] += amountToDeposit * offset.X * (1 - offset.Y);

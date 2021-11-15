@@ -1,4 +1,8 @@
-﻿namespace PTG.utility
+﻿using System;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
+
+namespace PTG.utility
 {
 	public class Noise
 	{
@@ -68,14 +72,28 @@
             }
 
             // Normalize
+            float min = maximum;
+            float max = 0;
+
             for (int i = 0; i < width; i++)
 			{
                 for (int j = 0; j < height; j++)
 				{
                     perlinNoise[i, j] /= totalAmplitude;
-                    perlinNoise[i, j] = MathUtil.Constrain(perlinNoise[i, j], 0f, 1f, 0f, maximum);
+
+                    if (perlinNoise[i, j] < min) min = perlinNoise[i, j];
+                    if (perlinNoise[i, j] > max) max = perlinNoise[i, j];
 				}
 			}
+
+            // Amplify from 0 to maximum
+            for (int i = 0; i < width; i++)
+            {
+	            for (int j = 0; j < height; j++)
+	            {
+		            perlinNoise[i, j] = MathUtil.Constrain(perlinNoise[i, j], min, max, 0f, maximum);
+                }
+            }
 
             return perlinNoise;
         }
