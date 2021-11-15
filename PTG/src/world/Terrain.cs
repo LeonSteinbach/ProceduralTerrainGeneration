@@ -24,14 +24,20 @@ namespace PTG.world
 		private readonly GraphicsDevice device;
 
 		private readonly Effect effect;
-		private readonly Texture2D texture;
+		private readonly Texture2D texture0;
+		private readonly Texture2D texture1;
+		private readonly Texture2D texture2;
+		private readonly Texture2D texture3;
 
-		public Terrain(int width, int height, Effect effect, Texture2D texture, GraphicsDevice device)
+		public Terrain(int width, int height, Effect effect, Texture2D texture0, Texture2D texture1, Texture2D texture2, Texture2D texture3, GraphicsDevice device)
 		{
 			this.width = width;
 			this.height = height;
 			this.effect = effect;
-			this.texture = texture;
+			this.texture0 = texture0;
+			this.texture1 = texture1;
+			this.texture2 = texture2;
+			this.texture3 = texture3;
 			this.device = device;
 		}
 
@@ -352,14 +358,13 @@ namespace PTG.world
 
 		public void Render(Camera camera)
 		{
-			effect.CurrentTechnique = effect.Techniques["SeasonColored"];
-			//effect.CurrentTechnique = effect.Techniques["Textured"];
+			//effect.CurrentTechnique = effect.Techniques["SeasonColored"];
+			effect.CurrentTechnique = effect.Techniques["Textured"];
 
 			// Transformations
 			effect.Parameters["xView"].SetValue(camera.View);
 			effect.Parameters["xProjection"].SetValue(camera.Projection);
 			effect.Parameters["xWorld"].SetValue(Matrix.Identity);
-			effect.Parameters["xTexture"].SetValue(texture);
 
 			// Lighting
 			Vector3 light = new Vector3(1.0f, -0.1f, -0.1f);
@@ -368,6 +373,12 @@ namespace PTG.world
 			effect.Parameters["xLightDirection"].SetValue(light);
 			effect.Parameters["xAmbient"].SetValue(0.5f);
 			effect.Parameters["xEnableLighting"].SetValue(true);
+
+			// Textures
+			effect.Parameters["xTexture0"].SetValue(texture0);
+			//effect.Parameters["Texture1"].SetValue(texture1);
+			//effect.Parameters["Texture2"].SetValue(texture2);
+			//effect.Parameters["Texture3"].SetValue(texture3);
 
 			// Render vertices
 			foreach (EffectPass pass in effect.CurrentTechnique.Passes)

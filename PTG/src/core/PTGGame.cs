@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
@@ -62,7 +61,14 @@ namespace PTG.core
             camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
 
-            terrain = new Terrain(mapSize, mapSize * 2, Content.Load<Effect>("effects"), Content.Load<Texture2D>("texture"), GraphicsDevice);
+            terrain = new Terrain(
+	            mapSize, mapSize * 2, 
+	            Content.Load<Effect>("shaders/effects"), 
+	            Content.Load<Texture2D>("images/sand"),
+	            Content.Load<Texture2D>("images/dirt"),
+	            Content.Load<Texture2D>("images/rock"),
+	            Content.Load<Texture2D>("images/ice"),
+                GraphicsDevice);
             terrain.Generate();
         }
 
