@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Xna.Framework;
-
-namespace PTG.utility
+﻿namespace PTG.utility
 {
 	public class Noise
 	{
