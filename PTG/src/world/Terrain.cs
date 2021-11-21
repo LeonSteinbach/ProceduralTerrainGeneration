@@ -10,6 +10,7 @@ namespace PTG.world
 	public class Terrain
 	{
 		private readonly int width, height;
+		private readonly int maxHeight;
 
 		private VertexPositionNormalTexture[] vertices;
 		private uint[] indices;
@@ -39,6 +40,8 @@ namespace PTG.world
 			this.texture2 = texture2;
 			this.texture3 = texture3;
 			this.device = device;
+
+			maxHeight = width / 4;
 		}
 
 		public void Generate()
@@ -55,7 +58,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 12, maximum: width / 2f);
+			heightMap = Noise.PerlinNoise(width, height, 12, maximum: maxHeight);
 
 			//SetWaterLevel(100);
 		}
@@ -74,7 +77,7 @@ namespace PTG.world
 			}
 		}
 
-		public void Erode()
+		public void Erode(int detailLevel)
 		{
 			int numIterations = 100000;
 			int maxLifetime = 100;
@@ -83,8 +86,8 @@ namespace PTG.world
 			float minSedimentCapacity = 0.01f;
 			float gravity = 0.1f;
 			float evaporateSpeed = 0.01f;
-			float depositSpeed = 0.1f;
-			float erodeSpeed = 1.3f;
+			float depositSpeed = 1.3f;
+			float erodeSpeed = 1.1f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
@@ -110,14 +113,14 @@ namespace PTG.world
 					float posHeight = CalculateHeight(pos);
 
 					// Update the droplet's direction and position
-					dir.X = gradient.X == 0 && gradient.Y == 0 ? 0 : dir.X * inertia - gradient.X * (1 - inertia);
-					dir.Y = gradient.X == 0 && gradient.Y == 0 ? 0 : dir.Y * inertia - gradient.Y * (1 - inertia);
+					dir.X += gradient.X == 0 && gradient.Y == 0 ? 0 : (dir.X * inertia - gradient.X * (1 - inertia)) * 2.1f;
+					dir.Y += gradient.X == 0 && gradient.Y == 0 ? 0 : (dir.Y * inertia - gradient.Y * (1 - inertia)) * 2.1f;
 					dir.Normalize();
 
 					pos += dir;
 
 					// Break if position is invalid or the droplet is not moving
-					if (dir.X == 0 && dir.Y == 0 || 
+					if (Math.Abs(dir.X) < 0.1f && Math.Abs(dir.Y) < 0.1f || 
 					    (int) pos.X < 0 || (int) pos.X >= width - 1 || 
 					    (int) pos.Y < 0 || (int) pos.Y >= height - 1)
 						break;
@@ -132,7 +135,7 @@ namespace PTG.world
 						minSedimentCapacity);
 
 					// Deposit
-					if (sediment > sedimentCapacity || deltaHeight > 0)
+					if (sediment > sedimentCapacity)
 					{
 						float amountToDeposit = deltaHeight > 0
 							? Math.Min(deltaHeight, sediment)
@@ -140,7 +143,7 @@ namespace PTG.world
 
 						if (float.IsNaN(amountToDeposit)) break;
 						sediment -= amountToDeposit;
-						
+
 						// Add the sediment to the four neighbor nodes using linear interpolation
 						heightMap[node.X, node.Y] += amountToDeposit * (1 - offset.X) * (1 - offset.Y);
 						heightMap[node.X + 1, node.Y] += amountToDeposit * offset.X * (1 - offset.Y);
@@ -151,9 +154,21 @@ namespace PTG.world
 					// Erode
 					else
 					{
-						float amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
+						float amountToErode = 0;
+
+						if (detailLevel == 0)
+							amountToErode = Math.Min(-deltaHeight / newPosHeight, -deltaHeight * 2); 
+						else if (detailLevel == 1)
+							amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
+
 						if (float.IsNaN(amountToErode)) break;
-						sediment += amountToErode;
+						sediment += 0.25f * amountToErode;
+
+						// Use erosion brush to erode from all nodes inside the droplet's brush radius
+						heightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
+						heightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
+						heightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
+						heightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
 
 						/*
 						// Use erosion brush to erode from all nodes inside the droplet's erosion radius
@@ -171,14 +186,8 @@ namespace PTG.world
 							float deltaSediment = (heightMap[nodeIndexX, nodeIndexY] < weighedErodeAmount) ? heightMap[nodeIndexX, nodeIndexY] : weighedErodeAmount;
 							heightMap[nodeIndexX, nodeIndexY] -= deltaSediment;
 							sediment += deltaSediment;
-						}*/
-
-						
-						// Use erosion brush to erode from all nodes inside the droplet's brush radius
-						heightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
-						heightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
-						heightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
-						heightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
+						}
+						*/
 					}
 
 					// Update speed and water content
@@ -190,7 +199,7 @@ namespace PTG.world
 
 		private void InitializeBrush()
 		{
-			int radius = 8;
+			int radius = 6;
 
 			erosionBrushIndices = new List<int>[width, height];
 			erosionBrushWeights = new List<float>[width, height];
@@ -205,8 +214,6 @@ namespace PTG.world
 			{
 				for (int i = 0; i < width; i++)
 				{
-					radius = RandomHelper.RandInt(8, 8);
-
 					int centreX = i;
 					int centreY = j;
 
@@ -360,7 +367,9 @@ namespace PTG.world
 		{
 			//effect.CurrentTechnique = effect.Techniques["SeasonColored"];
 			effect.CurrentTechnique = effect.Techniques["Textured"];
-			//effect.CurrentTechnique = effect.Techniques["Multitextured"];
+
+			// Data
+			effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
 
 			// Transformations
 			effect.Parameters["View"].SetValue(camera.View);
@@ -376,9 +385,9 @@ namespace PTG.world
 
 			// Textures
 			effect.Parameters["Texture0"].SetValue(texture0);
-			//effect.Parameters["Texture1"].SetValue(texture1);
-			//effect.Parameters["Texture2"].SetValue(texture2);
-			//effect.Parameters["Texture3"].SetValue(texture3);
+			effect.Parameters["Texture1"].SetValue(texture1);
+			effect.Parameters["Texture2"].SetValue(texture2);
+			effect.Parameters["Texture3"].SetValue(texture3);
 
 			// Render vertices
 			foreach (EffectPass pass in effect.CurrentTechnique.Passes)

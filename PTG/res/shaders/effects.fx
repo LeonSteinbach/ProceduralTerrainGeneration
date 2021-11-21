@@ -17,10 +17,11 @@
 
 struct VertexToPixel
 {
-	float4 Position   	: POSITION;
+	float4 Position   		: POSITION;
 	float4 Color			: COLOR0;
-	float LightingFactor : TEXCOORD0;
-	float2 TextureCoords: TEXCOORD1;
+	float LightingFactor	: TEXCOORD0;
+	float2 TextureCoords	: TEXCOORD1;
+	float Height			: TEXCOORD2;
 };
 
 struct PixelToFrame
@@ -29,6 +30,7 @@ struct PixelToFrame
 };
 
 //------- Constants --------
+
 float4x4 View;
 float4x4 Projection;
 float4x4 World;
@@ -36,21 +38,9 @@ float4x4 World;
 float3 LightDirection;
 float Ambient;
 
+float MaxHeight;
+
 //------- Texture Samplers --------
-
-/*
-texture xTexture0;
-texture xTexture1;
-texture xTexture2;
-texture xTexture3;
-*/
-
-/*
-sampler2D TextureSampler0 = sampler_state { Texture = <xTexture0>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
-sampler2D TextureSampler1 = sampler_state { Texture = <xTexture1>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
-sampler2D TextureSampler2 = sampler_state { Texture = <xTexture2>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
-sampler2D TextureSampler3 = sampler_state { Texture = <xTexture3>; MagFilter = Linear; MinFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap; };
-*/
 
 Texture Texture0;
 sampler TextureSampler0 = sampler_state {
@@ -92,6 +82,14 @@ sampler TextureSampler3 = sampler_state {
 	AddressV = wrap;
 };
 
+//------- Function --------
+
+float constrain(float value, float min, float max) {
+	if (value < min) value = min;
+	if (value > max) value = max;
+	return value;
+}
+
 
 //------- SeasonColored --------
 
@@ -106,6 +104,7 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 	float4x4 preWorldViewProjection = mul(World, preViewProjection);
 
 	Output.Position = mul(inPos, preWorldViewProjection);
+	Output.Height = inPos[1];
 
 	if (inPos[1] > 0.0f)
 	{
@@ -156,6 +155,7 @@ VertexToPixel TexturedVS(float4 inPos : POSITION, float3 inNormal : NORMAL, floa
 
 	Output.Position = mul(inPos, preWorldViewProjection);
 	Output.TextureCoords = inTexCoords;
+	Output.Height = inPos[1];
 
 	float3 Normal = normalize(mul(normalize(inNormal), World));
 	Output.LightingFactor = dot(Normal, -LightDirection);
@@ -168,21 +168,20 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	PixelToFrame Output = (PixelToFrame)0;
 
 	// Calculate blend textures
-	float x = PSIn.Position[1];
+	float x = PSIn.Height / MaxHeight;
 	float n = 1.7f;
 	float a = 5.2f;
 
-	float hw0 = pow(-(a * x - n * 0), 4) + 1;
-	float hw1 = pow(-(a * x - n * 1), 4) + 1;
-	float hw2 = pow(-(a * x - n * 2), 4) + 1;
-	float hw3 = pow(-(a * x - n * 3), 4) + 1;
+	float hw0 = constrain(-pow(a * x - n * 0, 4) + 1, 0.001f, 1);
+	float hw1 = constrain(-pow(a * x - n * 1, 4) + 1, 0.001f, 1);
+	float hw2 = constrain(-pow(a * x - n * 2, 4) + 1, 0.001f, 1);
+	float hw3 = constrain(-pow(a * x - n * 3, 4) + 1, 0.001f, 1);
 
-	if (hw0 < 0) hw0 = 0;
-	if (hw1 < 0) hw1 = 0;
-	if (hw2 < 0) hw2 = 0;
-	if (hw3 < 0) hw3 = 0;
+	Output.Color = tex2D(TextureSampler0, PSIn.TextureCoords) * hw0;
+	Output.Color += tex2D(TextureSampler1, PSIn.TextureCoords) * hw1;
+	Output.Color += tex2D(TextureSampler2, PSIn.TextureCoords) * hw2;
+	Output.Color += tex2D(TextureSampler3, PSIn.TextureCoords) * hw3;
 
-	Output.Color = tex2D(TextureSampler0, PSIn.TextureCoords);
 	Output.Color.rgb *= saturate(PSIn.LightingFactor) + Ambient;
 
 	return Output;
@@ -192,7 +191,7 @@ technique Textured
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_2_0 TexturedVS();
-		PixelShader = compile ps_2_0 TexturedPS();
+		VertexShader = compile VS_SHADERMODEL TexturedVS();
+		PixelShader = compile PS_SHADERMODEL TexturedPS();
 	}
 }

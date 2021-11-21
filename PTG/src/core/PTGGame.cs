@@ -65,9 +65,9 @@ namespace PTG.core
 	            mapSize, mapSize * 2, 
 	            Content.Load<Effect>("shaders/effects"), 
 	            Content.Load<Texture2D>("images/sand"),
-	            Content.Load<Texture2D>("images/dirt"),
+	            Content.Load<Texture2D>("images/grass"),
 	            Content.Load<Texture2D>("images/rock"),
-	            Content.Load<Texture2D>("images/ice"),
+	            Content.Load<Texture2D>("images/snow"),
                 GraphicsDevice);
             terrain.Generate();
         }
@@ -89,12 +89,22 @@ namespace PTG.core
 
             if (Input.IsKeyHold(Keys.E))
             {
-	            terrain.Erode();
+	            terrain.Erode(0);
 
                 terrain.SetVertices();
                 terrain.CalculateNormals();
 
                 terrain.CopyToBuffers();
+            }
+
+            if (Input.IsKeyHold(Keys.T))
+            {
+	            terrain.Erode(1);
+
+	            terrain.SetVertices();
+	            terrain.CalculateNormals();
+
+	            terrain.CopyToBuffers();
             }
 
             if (Input.IsKeyReleased(Keys.E))
