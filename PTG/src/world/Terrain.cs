@@ -325,7 +325,7 @@ namespace PTG.world
 				{
 					vertices[x + y * width].Position = new Vector3(x, heightMap[x, y], -y);
 					vertices[x + y * width].TextureCoordinate = 
-						new Vector2(MathUtil.Constrain(x, 0, width, 0, 256), MathUtil.Constrain(y, 0, width, 0, 256));
+						new Vector2(MathUtil.Constrain(x, 0, width, 0, 16), MathUtil.Constrain(y, 0, width, 0, 16));
 				}
 			}
 		}
@@ -377,7 +377,7 @@ namespace PTG.world
 			effect.Parameters["World"].SetValue(Matrix.Identity);
 
 			// Lighting
-			Vector3 light = new Vector3(1.0f, -0.1f, -0.1f);
+			Vector3 light = new Vector3(1.0f, -0.5f, -0.1f);
 			light.Normalize();
 
 			effect.Parameters["LightDirection"].SetValue(light);

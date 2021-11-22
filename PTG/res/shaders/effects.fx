@@ -182,6 +182,8 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	Output.Color += tex2D(TextureSampler2, PSIn.TextureCoords) * hw2;
 	Output.Color += tex2D(TextureSampler3, PSIn.TextureCoords) * hw3;
 
+	Output.Color.a = 1.0f;
+
 	Output.Color.rgb *= saturate(PSIn.LightingFactor) + Ambient;
 
 	return Output;
