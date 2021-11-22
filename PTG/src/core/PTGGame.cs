@@ -64,10 +64,10 @@ namespace PTG.core
             terrain = new Terrain(
 	            mapSize, mapSize * 2, 
 	            Content.Load<Effect>("shaders/effects"), 
-	            Content.Load<Texture2D>("images/sand"),
-	            Content.Load<Texture2D>("images/grass"),
-	            Content.Load<Texture2D>("images/snowy_rock"),
-	            Content.Load<Texture2D>("images/snowy_rock_normal"),
+	            Content.Load<Texture2D>("images/dirt"),
+	            Content.Load<Texture2D>("images/rock"),
+	            Content.Load<Texture2D>("images/snow"),
+	            Content.Load<Texture2D>("images/rock"),
                 GraphicsDevice);
             terrain.Generate();
         }

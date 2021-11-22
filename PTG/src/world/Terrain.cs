@@ -41,7 +41,7 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			maxHeight = width / 4;
+			maxHeight = width / 3;
 		}
 
 		public void Generate()
@@ -403,7 +403,7 @@ namespace PTG.world
 			effect.Parameters["World"].SetValue(Matrix.Identity);
 
 			// Lighting
-			Vector3 light = new Vector3(1.0f, -0.5f, -0.1f);
+			Vector3 light = new Vector3(1.0f, -0.5f, -0.5f);
 			light.Normalize();
 
 			effect.Parameters["LightDirection"].SetValue(light);

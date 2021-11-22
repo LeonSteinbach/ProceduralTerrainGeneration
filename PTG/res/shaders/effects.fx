@@ -22,6 +22,7 @@ struct VertexToPixel
 	float LightingFactor	: TEXCOORD0;
 	float2 TextureCoords	: TEXCOORD1;
 	float Height			: TEXCOORD2;
+	float Normal			: TEXCOORD3;
 };
 
 struct PixelToFrame
@@ -120,6 +121,7 @@ VertexToPixel SeasonColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C
 	}
 
 	float3 Normal = normalize(mul(normalize(N), World));
+	Output.Normal = Normal;
 	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;
@@ -158,6 +160,7 @@ VertexToPixel TexturedVS(float4 Pos : POSITION, float3 N : NORMAL, float3 T : TA
 	Output.Height = Pos[1];
 
 	float3 Normal = normalize(mul(normalize(N), World));
+	Output.Normal = Normal;
 	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;
@@ -168,7 +171,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	PixelToFrame Output = (PixelToFrame)0;
 
 	// Calculate blend textures
-	float x = PSIn.Height / MaxHeight;
+	float x = 100 +PSIn.Height / MaxHeight;
 	float n = 1.7f;
 	float a = 5.2f;
 
@@ -176,6 +179,38 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	float hw1 = constrain(-pow(a * x - n * 1, 4) + 1, 0.001f, 1);
 	float hw2 = constrain(-pow(a * x - n * 2, 4) + 1, 0.001f, 1);
 	float hw3 = constrain(-pow(a * x - n * 3, 4) + 1, 0.001f, 1);
+
+	if (PSIn.Height / MaxHeight > 0.0f) {
+		if (abs(PSIn.Normal) > 0.0f) {
+			hw0 = 0.5f - PSIn.Height / MaxHeight;
+			hw1 = 0.001f;
+			hw2 = 0.5f + PSIn.Height / MaxHeight;
+			hw3 = 0.001f;
+		}
+
+		if (abs(PSIn.Normal) > 0.5f) {
+			hw0 = 0.001f;
+			hw1 = 1.001f;
+			hw2 = 0.001f;
+			hw3 = 0.001f;
+		}
+	}
+
+	if (PSIn.Height / MaxHeight > 0.5f) {
+		if (abs(PSIn.Normal) > 0.0f) {
+			hw0 = 0.5f - PSIn.Height / MaxHeight;
+			hw1 = 0.001f;
+			hw2 = 0.5f + PSIn.Height / MaxHeight;
+			hw3 = 0.001f;
+		}
+
+		if (abs(PSIn.Normal) > 0.5f) {
+			hw0 = 0.001f;
+			hw1 = 0.001f;
+			hw2 = 0.001f;
+			hw3 = 1.001f;
+		}
+	}
 
 	Output.Color = tex2D(TextureSampler0, PSIn.TextureCoords) * hw0;
 	Output.Color += tex2D(TextureSampler1, PSIn.TextureCoords) * hw1;
