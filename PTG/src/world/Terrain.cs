@@ -84,10 +84,10 @@ namespace PTG.world
 			float inertia = 0.05f;
 			float sedimentCapacityFactor = 4f;
 			float minSedimentCapacity = 0.01f;
-			float gravity = 0.1f;
+			float gravity = 0.01f;
 			float evaporateSpeed = 0.01f;
 			float depositSpeed = 1.3f;
-			float erodeSpeed = 1.1f;
+			float erodeSpeed = 0.1f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
