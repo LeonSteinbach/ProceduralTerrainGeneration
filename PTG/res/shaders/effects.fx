@@ -181,7 +181,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	float hw3 = constrain(-pow(a * x - n * 3, 4) + 1, 0.001f, 1);
 
 	if (PSIn.Height / MaxHeight > 0.0f) {
-		if (abs(PSIn.Normal) > 0.0f) {
+		if (abs(PSIn.Normal) >= 0.0f) {
 			hw0 = 0.5f - PSIn.Height / MaxHeight;
 			hw1 = 0.001f;
 			hw2 = 0.5f + PSIn.Height / MaxHeight;
@@ -197,7 +197,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	}
 
 	if (PSIn.Height / MaxHeight > 0.5f) {
-		if (abs(PSIn.Normal) > 0.0f) {
+		if (abs(PSIn.Normal) >= 0.0f) {
 			hw0 = 0.5f - PSIn.Height / MaxHeight;
 			hw1 = 0.001f;
 			hw2 = 0.5f + PSIn.Height / MaxHeight;
