@@ -93,7 +93,7 @@ float constrain(float value, float min, float max) {
 
 //------- SeasonColored --------
 
-VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float4 inColor : COLOR)
+VertexToPixel SeasonColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C : COLOR)
 {
 	float4 Red = float4(0.7f, 0.7f, 0.9f, 1.0f);
 	float4 Green = float4(0.6f, 0.4f, 0.3f, 1.0f);
@@ -103,14 +103,14 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 	float4x4 preViewProjection = mul(View, Projection);
 	float4x4 preWorldViewProjection = mul(World, preViewProjection);
 
-	Output.Position = mul(inPos, preWorldViewProjection);
-	Output.Height = inPos[1];
+	Output.Position = mul(Pos, preWorldViewProjection);
+	Output.Height = Pos[1];
 
-	if (inPos[1] > 0.0f)
+	if (Pos[1] > 0.0f)
 	{
 		Output.Color = Red;
 	}
-	else if (inPos[1] <= 130.0f && inPos[1] > 80.0f)
+	else if (Pos[1] <= 130.0f && Pos[1] > 80.0f)
 	{
 		Output.Color = Green;
 	}
@@ -119,7 +119,7 @@ VertexToPixel SeasonColoredVS(float4 inPos : POSITION, float3 inNormal : NORMAL,
 		Output.Color = Blue;
 	}
 
-	float3 Normal = normalize(mul(normalize(inNormal), World));
+	float3 Normal = normalize(mul(normalize(N), World));
 	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;
@@ -147,17 +147,17 @@ technique SeasonColored
 
 //------- Textured --------
 
-VertexToPixel TexturedVS(float4 inPos : POSITION, float3 inNormal : NORMAL, float2 inTexCoords : TEXCOORD0)
+VertexToPixel TexturedVS(float4 Pos : POSITION, float3 N : NORMAL, float3 T : TANGENT, float3 B : BINORMAL, float2 TexCoords : TEXCOORD0)
 {
 	VertexToPixel Output = (VertexToPixel)0;
 	float4x4 preViewProjection = mul(View, Projection);
 	float4x4 preWorldViewProjection = mul(World, preViewProjection);
 
-	Output.Position = mul(inPos, preWorldViewProjection);
-	Output.TextureCoords = inTexCoords;
-	Output.Height = inPos[1];
+	Output.Position = mul(Pos, preWorldViewProjection);
+	Output.TextureCoords = TexCoords;
+	Output.Height = Pos[1];
 
-	float3 Normal = normalize(mul(normalize(inNormal), World));
+	float3 Normal = normalize(mul(normalize(N), World));
 	Output.LightingFactor = dot(Normal, -LightDirection);
 
 	return Output;

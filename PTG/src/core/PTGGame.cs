@@ -66,8 +66,8 @@ namespace PTG.core
 	            Content.Load<Effect>("shaders/effects"), 
 	            Content.Load<Texture2D>("images/sand"),
 	            Content.Load<Texture2D>("images/grass"),
-	            Content.Load<Texture2D>("images/rock"),
-	            Content.Load<Texture2D>("images/snow"),
+	            Content.Load<Texture2D>("images/snowy_rock"),
+	            Content.Load<Texture2D>("images/snowy_rock_normal"),
                 GraphicsDevice);
             terrain.Generate();
         }
@@ -93,6 +93,7 @@ namespace PTG.core
 
                 terrain.SetVertices();
                 terrain.CalculateNormals();
+                terrain.CalculateTangentsAndBinormals();
 
                 terrain.CopyToBuffers();
             }
@@ -103,16 +104,18 @@ namespace PTG.core
 
 	            terrain.SetVertices();
 	            terrain.CalculateNormals();
+	            terrain.CalculateTangentsAndBinormals();
 
-	            terrain.CopyToBuffers();
+                terrain.CopyToBuffers();
             }
 
             if (Input.IsKeyReleased(Keys.E))
             {
 	            terrain.SetVertices();
 	            terrain.CalculateNormals();
+	            terrain.CalculateTangentsAndBinormals();
 
-	            terrain.CopyToBuffers();
+                terrain.CopyToBuffers();
             }
 
             base.Update(gameTime);

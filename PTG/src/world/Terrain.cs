@@ -12,7 +12,7 @@ namespace PTG.world
 		private readonly int width, height;
 		private readonly int maxHeight;
 
-		private VertexPositionNormalTexture[] vertices;
+		private VertexPositionNormalTextureTangentBinormal[] vertices;
 		private uint[] indices;
 
 		private float[,] heightMap;
@@ -52,6 +52,7 @@ namespace PTG.world
 			SetVertices();
 			SetIndices();
 			CalculateNormals();
+			CalculateTangentsAndBinormals();
 
 			CopyToBuffers();
 		}
@@ -317,7 +318,7 @@ namespace PTG.world
 
 		public void SetVertices()
 		{
-			vertices = new VertexPositionNormalTexture[width * height];
+			vertices = new VertexPositionNormalTextureTangentBinormal[width * height];
 
 			for (int y = 0; y < height; y++)
 			{
@@ -354,9 +355,34 @@ namespace PTG.world
 				vertices[i].Normal.Normalize();
 		}
 
+		public void CalculateTangentsAndBinormals()
+		{
+			for (int i = 0; i < vertices.Length; i++)
+			{
+				Vector3 v1 = vertices[i].Position;
+				int x = i % width;
+
+				// Calculate tangent
+				if (x < width - 1)
+				{
+					Vector3 v2 = vertices[i + 1].Position;
+					vertices[i].Tangent = v2 - v1;
+				}
+				else
+				{
+					Vector3 v2 = vertices[^1].Position;
+					vertices[i].Tangent = v1 - v2;
+				}
+
+				// Calculate binormal
+				vertices[i].Tangent.Normalize();
+				vertices[i].Binormal = Vector3.Cross(vertices[i].Tangent, vertices[i].Normal);
+			}
+		}
+
 		public void CopyToBuffers()
 		{
-			vertexBuffer = new VertexBuffer(device, VertexPositionNormalTexture.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
+			vertexBuffer = new VertexBuffer(device, VertexPositionNormalTextureTangentBinormal.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
 			vertexBuffer.SetData(vertices);
 			
 			indexBuffer = new IndexBuffer(device, IndexElementSize.ThirtyTwoBits, indices.Length, BufferUsage.WriteOnly);
