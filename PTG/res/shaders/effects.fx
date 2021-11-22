@@ -188,7 +188,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 			hw3 = 0.001f;
 		}
 
-		if (abs(PSIn.Normal) > 0.5f) {
+		if (abs(PSIn.Normal) > 0.3f) {
 			hw0 = 0.001f;
 			hw1 = 1.001f;
 			hw2 = 0.001f;
@@ -204,7 +204,7 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 			hw3 = 0.001f;
 		}
 
-		if (abs(PSIn.Normal) > 0.5f) {
+		if (abs(PSIn.Normal) > 0.3f) {
 			hw0 = 0.001f;
 			hw1 = 0.001f;
 			hw2 = 0.001f;

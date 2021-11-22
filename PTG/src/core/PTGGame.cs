@@ -89,31 +89,11 @@ namespace PTG.core
 
             if (Input.IsKeyHold(Keys.E))
             {
-	            terrain.Erode(0);
+	            terrain.Erode();
 
                 terrain.SetVertices();
                 terrain.CalculateNormals();
                 terrain.CalculateTangentsAndBinormals();
-
-                terrain.CopyToBuffers();
-            }
-
-            if (Input.IsKeyHold(Keys.T))
-            {
-	            terrain.Erode(1);
-
-	            terrain.SetVertices();
-	            terrain.CalculateNormals();
-	            terrain.CalculateTangentsAndBinormals();
-
-                terrain.CopyToBuffers();
-            }
-
-            if (Input.IsKeyReleased(Keys.E))
-            {
-	            terrain.SetVertices();
-	            terrain.CalculateNormals();
-	            terrain.CalculateTangentsAndBinormals();
 
                 terrain.CopyToBuffers();
             }

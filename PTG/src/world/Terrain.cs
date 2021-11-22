@@ -78,7 +78,7 @@ namespace PTG.world
 			}
 		}
 
-		public void Erode(int detailLevel)
+		public void Erode()
 		{
 			int numIterations = 100000;
 			int maxLifetime = 100;
@@ -155,12 +155,7 @@ namespace PTG.world
 					// Erode
 					else
 					{
-						float amountToErode = 0;
-
-						if (detailLevel == 0)
-							amountToErode = Math.Min(-deltaHeight / newPosHeight, -deltaHeight * 2); 
-						else if (detailLevel == 1)
-							amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
+						float amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
 
 						if (float.IsNaN(amountToErode)) break;
 						sediment += 0.25f * amountToErode;
