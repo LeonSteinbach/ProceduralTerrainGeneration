@@ -6,4 +6,4 @@ A procedural terrain generation tool for the project of "Wissenschaftliches Arbe
 
 |         Before         |  After 100k iterations |
 |------------------------|------------------------|
-|<img src="https://github.com/LeonSteinbach/ProceduralTerrainGeneration/blob/main/screenshots/1.png">| <img src="https://github.com/LeonSteinbach/ProceduralTerrainGeneration/blob/main/screenshots/2.png"> |
+|<img src="https://github.com/LeonSteinbach/ProceduralTerrainGeneration/blob/main/screenshots/erosion_1.png">| <img src="https://github.com/LeonSteinbach/ProceduralTerrainGeneration/blob/main/screenshots/erosion_2.png"> |
