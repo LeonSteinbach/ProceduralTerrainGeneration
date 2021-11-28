@@ -23,6 +23,7 @@ namespace PTG.utility
             texture.SetData(colorArray);
 
 			// Save texture to png file
+			Directory.CreateDirectory("gen");
 			Stream stream = File.Create(filename);
 			texture.SaveAsPng(stream, width, height);
 			stream.Dispose();
