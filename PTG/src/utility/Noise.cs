@@ -6,7 +6,7 @@ namespace PTG.utility
 {
 	public class Noise
 	{
-		private static void SaveArrayToPng(string filename, GraphicsDevice device, float[,] array, int width, int height, float maxHeight)
+		public static void SaveArrayToPng(string filename, GraphicsDevice device, float[,] array, int width, int height, float maxHeight)
 		{
 			// Convert array to texture
 			Color[] colorArray = new Color[width * height];
@@ -75,7 +75,7 @@ namespace PTG.utility
 	            }
 
 	            // Generate smooth noise
-                smoothNoise[i] = GenerateSmoothNoise(baseNoise, width, height, i);
+                smoothNoise[i] = GenerateSmoothNoise(baseNoise, width, height, octaveCount - i);
 
                 SaveArrayToPng("gen/smooth_noise_" + i + ".png", device, smoothNoise[i], width, height, 1);
             }
@@ -84,7 +84,7 @@ namespace PTG.utility
             float amplitude = 1.0f;
             float totalAmplitude = 0.0f;
 
-            for (int octave = octaveCount - 1; octave >= 0; octave--)
+            for (int octave = 0; octave < octaveCount; octave++)
             {
                 amplitude *= persistence;
                 totalAmplitude += amplitude;

@@ -9,8 +9,9 @@ namespace PTG.world
 {
 	public class Terrain
 	{
-		private readonly int width, height;
-		private readonly int maxHeight;
+		public int Width { get; }
+		public int Height { get; }
+		public int MaxHeight { get; }
 
 		private readonly bool waterEnabled;
 		private readonly int waterLevel;
@@ -18,7 +19,7 @@ namespace PTG.world
 		private VertexPositionNormalTextureTangentBinormal[] vertices;
 		private int[] indices;
 
-		private float[,] heightMap;
+		public float[,] HeightMap { get; set; }
 		private List<int>[,] erosionBrushIndices;
 		private List<float>[,] erosionBrushWeights;
 
@@ -35,8 +36,8 @@ namespace PTG.world
 
 		public Terrain(int width, int height, Effect effect, Texture2D texture0, Texture2D texture1, Texture2D texture2, Texture2D texture3, GraphicsDevice device)
 		{
-			this.width = width;
-			this.height = height;
+			this.Width = width;
+			this.Height = height;
 			this.effect = effect;
 			this.texture0 = texture0;
 			this.texture1 = texture1;
@@ -44,7 +45,7 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			maxHeight = width / 4;
+			MaxHeight = width / 4;
 			waterLevel = width / 12;
 			waterEnabled = false;
 		}
@@ -64,7 +65,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 10, device, maximum: maxHeight);
+			HeightMap = Noise.PerlinNoise(Width, Height, 8, device, maximum: MaxHeight);
 			
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);
@@ -72,13 +73,13 @@ namespace PTG.world
 
 		private void SetWaterLevel(float level)
 		{
-			for (int y = 0; y < height; y++)
+			for (int y = 0; y < Height; y++)
 			{
-				for (int x = 0; x < width; x++)
+				for (int x = 0; x < Width; x++)
 				{
-					if (heightMap[x, y] <= level)
+					if (HeightMap[x, y] <= level)
 					{
-						heightMap[x, y] = level;
+						HeightMap[x, y] = level;
 					}
 				}
 			}
@@ -91,17 +92,17 @@ namespace PTG.world
 			float inertia = 0.05f;
 			float sedimentCapacityFactor = 4f;
 			float minSedimentCapacity = 0.01f;
-			float gravity = 0.01f;
+			float gravity = 0.1f;
 			float evaporateSpeed = 0.01f;
 			float depositSpeed = 1.3f;
 			float erodeSpeed = 1.3f;
-			float ruggedness = 0.11f;
+			float ruggedness = 0.1f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
 				Vector2 pos = new Vector2(
-					RandomHelper.RandFloat() * (width - 1), 
-					RandomHelper.RandFloat() * (height - 1));
+					RandomHelper.RandFloat() * (Width - 1), 
+					RandomHelper.RandFloat() * (Height - 1));
 				Vector2 dir = Vector2.Zero;
 				
 				float speed = 1f;
@@ -113,7 +114,7 @@ namespace PTG.world
 					Point node = new Point((int) pos.X, (int) pos.Y);
 					Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
 
-					if (node.X < 0 || node.X >= width - 1 || node.Y < 0 || node.Y >= height - 1)
+					if (node.X < 0 || node.X >= Width - 1 || node.Y < 0 || node.Y >= Height - 1)
 						break;
 
 					// Calculate height and gradient using linear interpolation
@@ -129,8 +130,8 @@ namespace PTG.world
 
 					// Break if position is invalid or the droplet is not moving
 					if (Math.Abs(dir.X) < 0.1f && Math.Abs(dir.Y) < 0.1f || 
-					    (int) pos.X < 0 || (int) pos.X >= width - 1 || 
-					    (int) pos.Y < 0 || (int) pos.Y >= height - 1)
+					    (int) pos.X < 0 || (int) pos.X >= Width - 1 || 
+					    (int) pos.Y < 0 || (int) pos.Y >= Height - 1)
 						break;
 
 					// Calculate the droplet's new height and the difference in height
@@ -153,10 +154,10 @@ namespace PTG.world
 						sediment -= amountToDeposit;
 
 						// Add the sediment to the four neighbor nodes using linear interpolation
-						heightMap[node.X, node.Y] += 0.25f * amountToDeposit * (1 - offset.X) * (1 - offset.Y);
-						heightMap[node.X + 1, node.Y] += 0.25f * amountToDeposit * offset.X * (1 - offset.Y);
-						heightMap[node.X, node.Y + 1] += 0.25f * amountToDeposit * (1 - offset.X) * offset.Y;
-						heightMap[node.X + 1, node.Y + 1] += 0.25f * amountToDeposit * offset.X * offset.Y;
+						HeightMap[node.X, node.Y] += 0.25f * amountToDeposit * (1 - offset.X) * (1 - offset.Y);
+						HeightMap[node.X + 1, node.Y] += 0.25f * amountToDeposit * offset.X * (1 - offset.Y);
+						HeightMap[node.X, node.Y + 1] += 0.25f * amountToDeposit * (1 - offset.X) * offset.Y;
+						HeightMap[node.X + 1, node.Y + 1] += 0.25f * amountToDeposit * offset.X * offset.Y;
 					}
 
 					// Erode
@@ -168,10 +169,10 @@ namespace PTG.world
 						sediment += 0.25f * amountToErode;
 
 						// Use erosion brush to erode from all nodes inside the droplet's brush radius
-						heightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
-						heightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
-						heightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
-						heightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
+						HeightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
+						HeightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
+						HeightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
+						HeightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
 
 						/*
 						// Use erosion brush to erode from all nodes inside the droplet's erosion radius
@@ -204,8 +205,8 @@ namespace PTG.world
 		{
 			int radius = 6;
 
-			erosionBrushIndices = new List<int>[width, height];
-			erosionBrushWeights = new List<float>[width, height];
+			erosionBrushIndices = new List<int>[Width, Height];
+			erosionBrushWeights = new List<float>[Width, Height];
 
 			int[] xOffsets = new int[radius * radius * 4];
 			int[] yOffsets = new int[radius * radius * 4];
@@ -213,15 +214,15 @@ namespace PTG.world
 			float weightSum = 0;
 			int addIndex = 0;
 
-			for (int j = 0; j < height; j++)
+			for (int j = 0; j < Height; j++)
 			{
-				for (int i = 0; i < width; i++)
+				for (int i = 0; i < Width; i++)
 				{
 					int centreX = i;
 					int centreY = j;
 
-					if (centreY <= radius || centreY >= height - radius || centreX <= radius + 1 ||
-					    centreX >= width - radius)
+					if (centreY <= radius || centreY >= Height - radius || centreX <= radius + 1 ||
+					    centreX >= Width - radius)
 					{
 						weightSum = 0;
 						addIndex = 0;
@@ -235,7 +236,7 @@ namespace PTG.world
 									int coordX = centreX + x;
 									int coordY = centreY + y;
 
-									if (coordX >= 0 && coordX < width && coordY >= 0 && coordY < height)
+									if (coordX >= 0 && coordX < Width && coordY >= 0 && coordY < Height)
 									{
 										float weight = 1 - (float)Math.Sqrt(sqrDst) / radius;
 										weightSum += weight;
@@ -255,7 +256,7 @@ namespace PTG.world
 
 					for (int n = 0; n < numEntries; n++)
 					{
-						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * width + xOffsets[n] + centreX);
+						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * Width + xOffsets[n] + centreX);
 						erosionBrushWeights[i, j].Add(weights[n] / weightSum);
 					}
 				}
@@ -267,10 +268,10 @@ namespace PTG.world
 			Point node = new Point((int) pos.X, (int) pos.Y);
 			Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
 
-			float heightNw = heightMap[node.X, node.Y];
-			float heightNe = heightMap[node.X + 1, node.Y];
-			float heightSw = heightMap[node.X, node.Y + 1];
-			float heightSe = heightMap[node.X + 1, node.Y + 1];
+			float heightNw = HeightMap[node.X, node.Y];
+			float heightNe = HeightMap[node.X + 1, node.Y];
+			float heightSw = HeightMap[node.X, node.Y + 1];
+			float heightSe = HeightMap[node.X + 1, node.Y + 1];
 
 			Vector2 gradient = new Vector2(
 				(heightNe - heightNw) * (1 - offset.Y) + (heightSe - heightSw) * offset.Y,
@@ -284,10 +285,10 @@ namespace PTG.world
 			Point node = new Point((int) pos.X, (int) pos.Y);
 			Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
 
-			float heightNw = heightMap[node.X, node.Y];
-			float heightNe = heightMap[node.X + 1, node.Y];
-			float heightSw = heightMap[node.X, node.Y + 1];
-			float heightSe = heightMap[node.X + 1, node.Y + 1];
+			float heightNw = HeightMap[node.X, node.Y];
+			float heightNe = HeightMap[node.X + 1, node.Y];
+			float heightSw = HeightMap[node.X, node.Y + 1];
+			float heightSe = HeightMap[node.X + 1, node.Y + 1];
 
 			float posHeight = heightNw * (1 - offset.X) * (1 - offset.Y) + 
 			                  heightNe * offset.X * (1 - offset.Y) +
@@ -299,20 +300,20 @@ namespace PTG.world
 
 		public void SetIndices()
 		{
-			indices = new int[6 * (width - 1) * (height - 1)];
+			indices = new int[6 * (Width - 1) * (Height - 1)];
 
 			int i = 0;
-			for (int y = 0; y < height - 1; y++)
+			for (int y = 0; y < Height - 1; y++)
 			{
-				for (int x = 0; x < width - 1; x++)
+				for (int x = 0; x < Width - 1; x++)
 				{
 					// Create triangles
-					indices[i] = (int)(x + (y + 1) * width);           // up left
-					indices[i + 1] = (int)(x + y * width + 1);         // down right
-					indices[i + 2] = (int)(x + y * width);             // down left
-					indices[i + 3] = (int)(x + (y + 1) * width);       // up left
-					indices[i + 4] = (int)(x + (y + 1) * width + 1);   // up right
-					indices[i + 5] = (int)(x + y * width + 1);         // down right
+					indices[i] = (int)(x + (y + 1) * Width);           // up left
+					indices[i + 1] = (int)(x + y * Width + 1);         // down right
+					indices[i + 2] = (int)(x + y * Width);             // down left
+					indices[i + 3] = (int)(x + (y + 1) * Width);       // up left
+					indices[i + 4] = (int)(x + (y + 1) * Width + 1);   // up right
+					indices[i + 5] = (int)(x + y * Width + 1);         // down right
 					i += 6;
 				}
 			}
@@ -320,15 +321,15 @@ namespace PTG.world
 
 		public void SetVertices()
 		{
-			vertices = new VertexPositionNormalTextureTangentBinormal[width * height];
+			vertices = new VertexPositionNormalTextureTangentBinormal[Width * Height];
 
-			for (int y = 0; y < height; y++)
+			for (int y = 0; y < Height; y++)
 			{
-				for (int x = 0; x < width; x++)
+				for (int x = 0; x < Width; x++)
 				{
-					vertices[x + y * width].Position = new Vector3(x, heightMap[x, y], -y);
-					vertices[x + y * width].TextureCoordinate = 
-						new Vector2(MathUtil.Constrain(x, 0, width, 0, 16), MathUtil.Constrain(y, 0, width, 0, 16));
+					vertices[x + y * Width].Position = new Vector3(x, HeightMap[x, y], -y);
+					vertices[x + y * Width].TextureCoordinate = 
+						new Vector2(MathUtil.Constrain(x, 0, Width, 0, 16), MathUtil.Constrain(y, 0, Width, 0, 16));
 				}
 			}
 		}
@@ -362,10 +363,10 @@ namespace PTG.world
 			for (int i = 0; i < vertices.Length; i++)
 			{
 				Vector3 v1 = vertices[i].Position;
-				int x = i % width;
+				int x = i % Width;
 
 				// Calculate tangent
-				if (x < width - 1)
+				if (x < Width - 1)
 				{
 					Vector3 v2 = vertices[i + 1].Position;
 					vertices[i].Tangent = v2 - v1;

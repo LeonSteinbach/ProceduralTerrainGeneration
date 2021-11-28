@@ -100,6 +100,11 @@ namespace PTG.core
                 terrain.CopyToBuffers();
             }
 
+            if (Input.IsKeyPressed(Keys.P))
+            {
+                Noise.SaveArrayToPng("gen/map.png", GraphicsDevice, terrain.HeightMap, terrain.Width, terrain.Height, terrain.MaxHeight);
+            }
+
             base.Update(gameTime);
         }
 
