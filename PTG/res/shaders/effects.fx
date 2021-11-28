@@ -94,7 +94,7 @@ float constrain(float value, float min, float max) {
 
 //------- SeasonColored --------
 
-VertexToPixel SeasonColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C : COLOR)
+VertexToPixel ColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C : COLOR)
 {
 	float4 Red = float4(0.7f, 0.7f, 0.9f, 1.0f);
 	float4 Green = float4(0.6f, 0.4f, 0.3f, 1.0f);
@@ -127,7 +127,7 @@ VertexToPixel SeasonColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C
 	return Output;
 }
 
-PixelToFrame SeasonColoredPS(VertexToPixel PSIn)
+PixelToFrame ColoredPS(VertexToPixel PSIn)
 {
 	PixelToFrame Output = (PixelToFrame)0;
 
@@ -137,12 +137,12 @@ PixelToFrame SeasonColoredPS(VertexToPixel PSIn)
 	return Output;
 }
 
-technique SeasonColored
+technique Colored
 {
 	pass Pass0
 	{
-		VertexShader = compile VS_SHADERMODEL  SeasonColoredVS();
-		PixelShader = compile PS_SHADERMODEL  SeasonColoredPS();
+		VertexShader = compile VS_SHADERMODEL ColoredVS();
+		PixelShader = compile PS_SHADERMODEL ColoredPS();
 	}
 }
 
@@ -170,46 +170,16 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 {
 	PixelToFrame Output = (PixelToFrame)0;
 
-	// Calculate blend textures
-	float x = 100 +PSIn.Height / MaxHeight;
-	float n = 1.7f;
-	float a = 5.2f;
+	float hw0 = 0.001f;
+	float hw1 = 0.001f;
+	float hw2 = 1.001f;
+	float hw3 = 0.001f;
 
-	float hw0 = constrain(-pow(a * x - n * 0, 4) + 1, 0.001f, 1);
-	float hw1 = constrain(-pow(a * x - n * 1, 4) + 1, 0.001f, 1);
-	float hw2 = constrain(-pow(a * x - n * 2, 4) + 1, 0.001f, 1);
-	float hw3 = constrain(-pow(a * x - n * 3, 4) + 1, 0.001f, 1);
-
-	if (PSIn.Height / MaxHeight > 0.0f) {
-		if (abs(PSIn.Normal) >= 0.0f) {
-			hw0 = 0.5f - PSIn.Height / MaxHeight;
-			hw1 = 0.001f;
-			hw2 = 0.5f + PSIn.Height / MaxHeight;
-			hw3 = 0.001f;
-		}
-
-		if (abs(PSIn.Normal) > 0.3f) {
-			hw0 = 0.001f;
-			hw1 = 1.001f;
-			hw2 = 0.001f;
-			hw3 = 0.001f;
-		}
-	}
-
-	if (PSIn.Height / MaxHeight > 0.5f) {
-		if (abs(PSIn.Normal) >= 0.0f) {
-			hw0 = 0.5f - PSIn.Height / MaxHeight;
-			hw1 = 0.001f;
-			hw2 = 0.5f + PSIn.Height / MaxHeight;
-			hw3 = 0.001f;
-		}
-
-		if (abs(PSIn.Normal) > 0.3f) {
-			hw0 = 0.001f;
-			hw1 = 0.001f;
-			hw2 = 0.001f;
-			hw3 = 1.001f;
-		}
+	if (abs(PSIn.Normal) > 0.4f) {
+		hw0 = 0.001f;
+		hw1 = 1.001f;
+		hw2 = 0.001f;
+		hw3 = 0.001f;
 	}
 
 	Output.Color = tex2D(TextureSampler0, PSIn.TextureCoords) * hw0;
