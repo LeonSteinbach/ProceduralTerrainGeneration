@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -12,6 +11,9 @@ namespace PTG.world
 	{
 		private readonly int width, height;
 		private readonly int maxHeight;
+
+		private readonly bool waterEnabled;
+		private readonly int waterLevel;
 
 		private VertexPositionNormalTextureTangentBinormal[] vertices;
 		private int[] indices;
@@ -43,6 +45,8 @@ namespace PTG.world
 			this.device = device;
 
 			maxHeight = width / 4;
+			waterLevel = width / 12;
+			waterEnabled = false;
 		}
 
 		public void Generate()
@@ -61,8 +65,9 @@ namespace PTG.world
 		public void SetHeights()
 		{
 			heightMap = Noise.PerlinNoise(width, height, 10, device, maximum: maxHeight);
-
-			SetWaterLevel(20);
+			
+			if (waterEnabled)
+				SetWaterLevel(waterLevel);
 		}
 
 		private void SetWaterLevel(float level)
@@ -90,7 +95,7 @@ namespace PTG.world
 			float evaporateSpeed = 0.01f;
 			float depositSpeed = 1.3f;
 			float erodeSpeed = 1.3f;
-			float ruggedness = 0.1f;
+			float ruggedness = 0.11f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
@@ -148,10 +153,10 @@ namespace PTG.world
 						sediment -= amountToDeposit;
 
 						// Add the sediment to the four neighbor nodes using linear interpolation
-						heightMap[node.X, node.Y] += amountToDeposit * (1 - offset.X) * (1 - offset.Y);
-						heightMap[node.X + 1, node.Y] += amountToDeposit * offset.X * (1 - offset.Y);
-						heightMap[node.X, node.Y + 1] += amountToDeposit * (1 - offset.X) * offset.Y;
-						heightMap[node.X + 1, node.Y + 1] += amountToDeposit * offset.X * offset.Y;
+						heightMap[node.X, node.Y] += 0.25f * amountToDeposit * (1 - offset.X) * (1 - offset.Y);
+						heightMap[node.X + 1, node.Y] += 0.25f * amountToDeposit * offset.X * (1 - offset.Y);
+						heightMap[node.X, node.Y + 1] += 0.25f * amountToDeposit * (1 - offset.X) * offset.Y;
+						heightMap[node.X + 1, node.Y + 1] += 0.25f * amountToDeposit * offset.X * offset.Y;
 					}
 
 					// Erode
@@ -393,6 +398,8 @@ namespace PTG.world
 
 			// Data
 			//effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
+			effect.Parameters["WaterLevel"].SetValue((float) waterLevel);
+			effect.Parameters["WaterEnabled"].SetValue(waterEnabled);
 
 			// Transformations
 			effect.Parameters["View"].SetValue(camera.View);

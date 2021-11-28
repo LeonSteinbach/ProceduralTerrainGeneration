@@ -1,18 +1,10 @@
-﻿//------------------------------------------------------
-//--                                                  --
-//--		   www.riemers.net                    --
-//--   		    Basic shaders                     --
-//--		Use/modify as you like                --
-//--                                                  --
-//------------------------------------------------------
-
-#if OPENGL
-#define SV_POSITION POSITION
-#define VS_SHADERMODEL vs_3_0
-#define PS_SHADERMODEL ps_3_0
+﻿#if OPENGL
+	#define SV_POSITION POSITION
+	#define VS_SHADERMODEL vs_3_0
+	#define PS_SHADERMODEL ps_3_0
 #else
-#define VS_SHADERMODEL vs_4_0_level_9_1
-#define PS_SHADERMODEL ps_4_0_level_9_1
+	#define VS_SHADERMODEL vs_4_0_level_9_1
+	#define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
 struct VertexToPixel
@@ -40,48 +32,20 @@ float3 LightDirection;
 float Ambient;
 
 float MaxHeight;
+float WaterLevel;
+bool WaterEnabled;
 
 //------- Texture Samplers --------
 
 Texture Texture0;
-sampler TextureSampler0 = sampler_state {
-	texture = <Texture0>;
-	magfilter = LINEAR;
-	minfilter = LINEAR;
-	mipfilter = LINEAR;
-	AddressU = mirror;
-	AddressV = mirror;
-};
-
-Texture Texture1;
-sampler TextureSampler1 = sampler_state {
-	texture = <Texture1>;
-	magfilter = LINEAR;
-	minfilter = LINEAR;
-	mipfilter = LINEAR;
-	AddressU = wrap;
-	AddressV = wrap;
-};
-
 Texture Texture2;
-sampler TextureSampler2 = sampler_state {
-	texture = <Texture2>;
-	magfilter = LINEAR;
-	minfilter = LINEAR;
-	mipfilter = LINEAR;
-	AddressU = mirror;
-	AddressV = mirror;
-};
-
+Texture Texture1;
 Texture Texture3;
-sampler TextureSampler3 = sampler_state {
-	texture = <Texture3>;
-	magfilter = LINEAR;
-	minfilter = LINEAR;
-	mipfilter = LINEAR;
-	AddressU = wrap;
-	AddressV = wrap;
-};
+
+sampler TextureSampler0 = sampler_state { texture = <Texture0>; magfilter = LINEAR; minfilter = LINEAR; mipfilter = LINEAR; AddressU = mirror; AddressV = mirror; };
+sampler TextureSampler1 = sampler_state { texture = <Texture1>; magfilter = LINEAR; minfilter = LINEAR; mipfilter = LINEAR; AddressU = mirror; AddressV = mirror; };
+sampler TextureSampler2 = sampler_state { texture = <Texture2>; magfilter = LINEAR; minfilter = LINEAR; mipfilter = LINEAR; AddressU = mirror; AddressV = mirror; };
+sampler TextureSampler3 = sampler_state { texture = <Texture3>; magfilter = LINEAR; minfilter = LINEAR; mipfilter = LINEAR; AddressU = mirror; AddressV = mirror; };
 
 //------- Function --------
 
@@ -175,7 +139,14 @@ PixelToFrame TexturedPS(VertexToPixel PSIn)
 	float hw2 = 1.001f;
 	float hw3 = 0.001f;
 
-	if (abs(PSIn.Normal) > 0.4f) {
+	if (WaterEnabled && abs(PSIn.Normal) < 0.1f && PSIn.Height <= WaterLevel + 0.001f) {
+		hw0 = 1.001f;
+		hw1 = 0.001f;
+		hw2 = 0.001f;
+		hw3 = 0.001f;
+	}
+
+	else if (abs(PSIn.Normal) > 0.4f) {
 		hw0 = 0.001f;
 		hw1 = 1.001f;
 		hw2 = 0.001f;

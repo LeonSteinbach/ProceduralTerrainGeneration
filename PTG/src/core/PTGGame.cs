@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
@@ -68,7 +66,7 @@ namespace PTG.core
             terrain = new Terrain(
 	            mapSize, mapSize, 
 	            Content.Load<Effect>("shaders/effects"), 
-	            Content.Load<Texture2D>("images/dirt"),
+	            Content.Load<Texture2D>("images/ice"),
 	            Content.Load<Texture2D>("images/rock"),
 	            Content.Load<Texture2D>("images/snow"),
 	            Content.Load<Texture2D>("images/rock"),
@@ -91,7 +89,7 @@ namespace PTG.core
                 terrain.Generate();
             }
 
-            if (Input.IsKeyPressed(Keys.E))
+            if (Input.IsKeyHold(Keys.E))
             {
 	            terrain.Erode();
 
