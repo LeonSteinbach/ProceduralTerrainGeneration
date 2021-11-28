@@ -1,7 +1,34 @@
-﻿namespace PTG.utility
+﻿using System;
+using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+namespace PTG.utility
 {
 	public class Noise
 	{
+		private static void SaveArrayToPng(string filename, GraphicsDevice device, float[,] array, int width, int height, float maxHeight)
+		{
+			// Convert array to texture
+			Color[] colorArray = new Color[width * height];
+			for (int y = 0; y < width; y++)
+			{
+				for (int x = 0; x < height; x++)
+				{
+					colorArray[x + width * y] = new Color(new Vector3(array[x, y] / maxHeight));
+				}
+			}
+
+			Texture2D texture = new Texture2D(device, width, height);
+            texture.SetData(colorArray);
+
+			// Save texture to png file
+			Stream stream = File.Create(filename);
+			texture.SaveAsPng(stream, width, height);
+			stream.Dispose();
+			texture.Dispose();
+        }
+
         private static float[,] GenerateSmoothNoise(float[,] baseNoise, int width, int height, int octave)
         {
             float[,] smoothNoise = new float[width, height];
@@ -31,23 +58,27 @@
             return smoothNoise;
         }
 
-        public static float[,] PerlinNoise(int width, int height, int octaveCount, float maximum = 1f)
+        public static float[,] PerlinNoise(int width, int height, int octaveCount, GraphicsDevice device, float maximum = 1f)
         {
-            float[,] baseNoise = new float[width, height];
-            for (int y = 0; y < width; y++)
-            {
-                for (int x = 0; x < height; x++)
-                {
-                    baseNoise[y, x] = RandomHelper.RandFloat();
-                }
-            }
-
-            float[][,] smoothNoise = new float[octaveCount][,];
-
+	        float[][,] smoothNoise = new float[octaveCount][,];
             float persistence = 0.5f;
 
             for (int i = 0; i < octaveCount; i++)
+            {
+	            float[,] baseNoise = new float[width, height];
+	            for (int y = 0; y < width; y++)
+	            {
+		            for (int x = 0; x < height; x++)
+		            {
+			            baseNoise[y, x] = RandomHelper.RandFloat();
+		            }
+	            }
+
+	            // Generate smooth noise
                 smoothNoise[i] = GenerateSmoothNoise(baseNoise, width, height, i);
+
+                SaveArrayToPng("gen/smooth_noise_" + i + ".png", device, smoothNoise[i], width, height, 1);
+            }
 
             float[,] perlinNoise = new float[width, height];
             float amplitude = 1.0f;
@@ -81,7 +112,7 @@
                     if (perlinNoise[i, j] > max) max = perlinNoise[i, j];
 				}
 			}
-
+            
             // Amplify from 0 to maximum
             for (int i = 0; i < width; i++)
             {
@@ -90,6 +121,8 @@
 		            perlinNoise[i, j] = MathUtil.Constrain(perlinNoise[i, j], min, max, 0f, maximum);
                 }
             }
+
+            SaveArrayToPng("gen/perlin_noise.png", device, perlinNoise, width, height, maximum);
 
             return perlinNoise;
         }

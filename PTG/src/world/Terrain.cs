@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -13,7 +14,7 @@ namespace PTG.world
 		private readonly int maxHeight;
 
 		private VertexPositionNormalTextureTangentBinormal[] vertices;
-		private uint[] indices;
+		private int[] indices;
 
 		private float[,] heightMap;
 		private List<int>[,] erosionBrushIndices;
@@ -41,7 +42,7 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			maxHeight = width / 3;
+			maxHeight = width / 4;
 		}
 
 		public void Generate()
@@ -59,9 +60,9 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			heightMap = Noise.PerlinNoise(width, height, 12, maximum: maxHeight);
+			heightMap = Noise.PerlinNoise(width, height, 10, device, maximum: maxHeight);
 
-			//SetWaterLevel(100);
+			SetWaterLevel(20);
 		}
 
 		private void SetWaterLevel(float level)
@@ -88,7 +89,8 @@ namespace PTG.world
 			float gravity = 0.01f;
 			float evaporateSpeed = 0.01f;
 			float depositSpeed = 1.3f;
-			float erodeSpeed = 0.1f;
+			float erodeSpeed = 1.3f;
+			float ruggedness = 0.1f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
@@ -114,8 +116,8 @@ namespace PTG.world
 					float posHeight = CalculateHeight(pos);
 
 					// Update the droplet's direction and position
-					dir.X += gradient.X == 0 && gradient.Y == 0 ? 0 : (dir.X * inertia - gradient.X * (1 - inertia)) * 2.1f;
-					dir.Y += gradient.X == 0 && gradient.Y == 0 ? 0 : (dir.Y * inertia - gradient.Y * (1 - inertia)) * 2.1f;
+					dir.X += (dir.X * inertia - gradient.X * (1 - inertia)) * ruggedness;
+					dir.Y += (dir.Y * inertia - gradient.Y * (1 - inertia)) * ruggedness;
 					dir.Normalize();
 
 					pos += dir;
@@ -292,7 +294,7 @@ namespace PTG.world
 
 		public void SetIndices()
 		{
-			indices = new uint[6 * (width - 1) * (height - 1)];
+			indices = new int[6 * (width - 1) * (height - 1)];
 
 			int i = 0;
 			for (int y = 0; y < height - 1; y++)
@@ -300,12 +302,12 @@ namespace PTG.world
 				for (int x = 0; x < width - 1; x++)
 				{
 					// Create triangles
-					indices[i] = (uint)(x + (y + 1) * width);           // up left
-					indices[i + 1] = (uint)(x + y * width + 1);         // down right
-					indices[i + 2] = (uint)(x + y * width);             // down left
-					indices[i + 3] = (uint)(x + (y + 1) * width);       // up left
-					indices[i + 4] = (uint)(x + (y + 1) * width + 1);   // up right
-					indices[i + 5] = (uint)(x + y * width + 1);         // down right
+					indices[i] = (int)(x + (y + 1) * width);           // up left
+					indices[i + 1] = (int)(x + y * width + 1);         // down right
+					indices[i + 2] = (int)(x + y * width);             // down left
+					indices[i + 3] = (int)(x + (y + 1) * width);       // up left
+					indices[i + 4] = (int)(x + (y + 1) * width + 1);   // up right
+					indices[i + 5] = (int)(x + y * width + 1);         // down right
 					i += 6;
 				}
 			}
@@ -333,9 +335,9 @@ namespace PTG.world
 
 			for (int i = 0; i < indices.Length / 3; i++)
 			{
-				uint index1 = indices[i * 3];
-				uint index2 = indices[i * 3 + 1];
-				uint index3 = indices[i * 3 + 2];
+				int index1 = indices[i * 3];
+				int index2 = indices[i * 3 + 1];
+				int index3 = indices[i * 3 + 2];
 
 				Vector3 side1 = vertices[index1].Position - vertices[index3].Position;
 				Vector3 side2 = vertices[index1].Position - vertices[index2].Position;
@@ -386,11 +388,11 @@ namespace PTG.world
 
 		public void Render(Camera camera)
 		{
-			//effect.CurrentTechnique = effect.Techniques["SeasonColored"];
+			//effect.CurrentTechnique = effect.Techniques["Colored"];
 			effect.CurrentTechnique = effect.Techniques["Textured"];
 
 			// Data
-			effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
+			//effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
 
 			// Transformations
 			effect.Parameters["View"].SetValue(camera.View);
@@ -417,12 +419,12 @@ namespace PTG.world
 
 				device.Indices = indexBuffer;
 				device.SetVertexBuffer(vertexBuffer);
-
+				
 				device.DrawIndexedPrimitives(
 					PrimitiveType.TriangleList,
 					0,
 					0,
-					vertexBuffer.VertexCount);
+					vertexBuffer.VertexCount * 2);
 			}
 		}
 	}

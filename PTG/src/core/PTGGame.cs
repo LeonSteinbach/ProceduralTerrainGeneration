@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Diagnostics;
+using System.Threading;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PTG.graphics;
@@ -14,6 +16,8 @@ namespace PTG.core
 
         private Camera camera;
         private Terrain terrain;
+
+        private int mapSize;
 
         public PtgGame()
         {
@@ -56,13 +60,13 @@ namespace PTG.core
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            int mapSize = 512;
+            mapSize = 512;
 
             camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
 
             terrain = new Terrain(
-	            mapSize, mapSize * 2, 
+	            mapSize, mapSize, 
 	            Content.Load<Effect>("shaders/effects"), 
 	            Content.Load<Texture2D>("images/dirt"),
 	            Content.Load<Texture2D>("images/rock"),
@@ -87,7 +91,7 @@ namespace PTG.core
                 terrain.Generate();
             }
 
-            if (Input.IsKeyHold(Keys.E))
+            if (Input.IsKeyPressed(Keys.E))
             {
 	            terrain.Erode();
 
