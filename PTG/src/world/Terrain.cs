@@ -94,8 +94,8 @@ namespace PTG.world
 			float minSedimentCapacity = 0.01f;
 			float gravity = 0.1f;
 			float evaporateSpeed = 0.01f;
-			float depositSpeed = 1.3f;
-			float erodeSpeed = 1.3f;
+			float depositSpeed = 1.0f;
+			float erodeSpeed = 1.0f;
 			float ruggedness = 0.1f;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)

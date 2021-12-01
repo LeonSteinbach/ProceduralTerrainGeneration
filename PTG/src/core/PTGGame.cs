@@ -105,6 +105,18 @@ namespace PTG.core
                 Noise.SaveArrayToPng("gen/map.png", GraphicsDevice, terrain.HeightMap, terrain.Width, terrain.Height, terrain.MaxHeight);
             }
 
+            if (Input.IsKeyPressed(Keys.L))
+            {
+                terrain.HeightMap = Noise.LoadArrayFromPng("gen/map.png", GraphicsDevice, terrain.MaxHeight);
+                //Noise.Amplify(terrain.HeightMap, terrain.Width, terrain.Height, 0, 1, 1);
+
+                terrain.SetVertices();
+                terrain.CalculateNormals();
+                terrain.CalculateTangentsAndBinormals();
+
+                terrain.CopyToBuffers();
+            }
+
             base.Update(gameTime);
         }
 

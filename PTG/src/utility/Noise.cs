@@ -29,6 +29,27 @@ namespace PTG.utility
 			texture.Dispose();
         }
 
+		public static float[,] LoadArrayFromPng(string filename, GraphicsDevice device, float maxHeight)
+		{
+			Texture2D texture = Texture2D.FromFile(device, filename);
+
+			Color[] pixels = new Color[texture.Width * texture.Height];
+            texture.GetData(pixels);
+
+			float[,] array = new float[texture.Width, texture.Height];
+
+			for (int y = 0; y < texture.Width; y++)
+			{
+				for (int x = 0; x < texture.Height; x++)
+				{
+					Color color = pixels[x + y * texture.Width];
+					array[x, y] = (color.R + color.G + color.B) / 3f / 255f * maxHeight;
+				}
+			}
+
+			return array;
+		}
+
         private static float[,] GenerateSmoothNoise(float[,] baseNoise, int width, int height, int octave)
         {
             float[,] smoothNoise = new float[width, height];
@@ -113,18 +134,23 @@ namespace PTG.utility
 				}
 			}
             
-            // Amplify from 0 to maximum
-            for (int i = 0; i < width; i++)
-            {
-	            for (int j = 0; j < height; j++)
-	            {
-		            perlinNoise[i, j] = MathUtil.Constrain(perlinNoise[i, j], min, max, 0f, maximum);
-                }
-            }
+            Amplify(perlinNoise, width, height, min, max, maximum);
 
             SaveArrayToPng("gen/perlin_noise.png", device, perlinNoise, width, height, maximum);
 
             return perlinNoise;
+        }
+
+        public static void Amplify(float[,] array, int width, int height, float min, float max, float maxHeight)
+        {
+	        // Amplify from 0 to maximum
+	        for (int i = 0; i < width; i++)
+	        {
+		        for (int j = 0; j < height; j++)
+		        {
+			        array[i, j] = MathUtil.Constrain(array[i, j], min, max, 0f, maxHeight);
+		        }
+	        }
         }
     }
 }
