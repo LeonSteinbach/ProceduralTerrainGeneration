@@ -46,7 +46,7 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			MaxHeight = width / 4;
+			MaxHeight = width / 3;
 			waterLevel = width / 12;
 			waterEnabled = true;
 
@@ -56,7 +56,7 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
-			GenerateIsland();
+			//GenerateIsland();
 
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);
@@ -73,7 +73,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			HeightMap = Noise.PerlinNoise(Width, Height, 6, device, maximum: MaxHeight);
+			HeightMap = Noise.PerlinNoise(Width, Height, 8, device, maximum: MaxHeight);
 		}
 
 		private void SetWaterLevel(float level)
@@ -96,13 +96,13 @@ namespace PTG.world
 			{
 				for (int x = 0; x < Width; x++)
 				{
-					float d = MathUtil.Distance(new Vector2(x, y), new Vector2(Width / 2f, Height / 2f));
-					int md = Math.Min(Width, Height);
+					float dist = MathUtil.Distance(new Vector2(x, y), new Vector2(Width / 2f, Height / 2f));
+					int maxDist = Math.Min(Width, Height);
 
-					float slope = 10;
-					float radius = 0.4f;
+					float slope = 10;  // The slope of the sigmoid function
+					float radius = 0.4f;  // Turning point of the sigmoid function
 
-					HeightMap[x, y] *= MathUtil.Sigmoid((md - d) / md, slope, slope * (1 - radius));
+					HeightMap[x, y] *= MathUtil.Sigmoid((maxDist - dist) / maxDist, slope, slope * (1 - radius));
 				}
 			}
 		}
