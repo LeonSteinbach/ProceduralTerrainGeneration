@@ -56,6 +56,10 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
+			GenerateIsland();
+
+			if (waterEnabled)
+				SetWaterLevel(waterLevel);
 
 			GenerateObjects();
 
@@ -69,10 +73,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			HeightMap = Noise.PerlinNoise(Width, Height, 8, device, maximum: MaxHeight);
-			
-			if (waterEnabled)
-				SetWaterLevel(waterLevel);
+			HeightMap = Noise.PerlinNoise(Width, Height, 6, device, maximum: MaxHeight);
 		}
 
 		private void SetWaterLevel(float level)
@@ -89,13 +90,29 @@ namespace PTG.world
 			}
 		}
 
+		public void GenerateIsland()
+		{
+			for (int y = 0; y < Height; y++)
+			{
+				for (int x = 0; x < Width; x++)
+				{
+					float e = HeightMap[x, y];
+					float d = MathUtil.Distance(new Vector2(x, y), new Vector2(Width / 2f, Height / 2f));
+
+					e = (MaxHeight * 2f - waterLevel + e - d) / 2f;
+
+					HeightMap[x, y] = e;
+				}
+			}
+		}
+
 		public void GenerateObjects()
 		{
 			int spacing = 2;
 			int biomeSize = 6;
-			float biomeFactor = 0.5f;
+			float biomeFactor = 0.6f;
 			float heightFactor = 0.4f;
-			float slopeFactor = 0.3f;
+			float slopeFactor = 0.4f;
 			float quantity = 0.6f;
 
 			objects.Clear();
