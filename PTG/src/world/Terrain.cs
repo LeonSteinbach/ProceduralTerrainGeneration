@@ -96,12 +96,13 @@ namespace PTG.world
 			{
 				for (int x = 0; x < Width; x++)
 				{
-					float e = HeightMap[x, y];
 					float d = MathUtil.Distance(new Vector2(x, y), new Vector2(Width / 2f, Height / 2f));
+					int md = Math.Min(Width, Height);
 
-					e = (MaxHeight * 2f - waterLevel + e - d) / 2f;
+					float slope = 10;
+					float radius = 0.4f;
 
-					HeightMap[x, y] = e;
+					HeightMap[x, y] *= MathUtil.Sigmoid((md - d) / md, slope, slope * (1 - radius));
 				}
 			}
 		}

@@ -10,6 +10,11 @@ namespace PTG.utility
             return x0 * (1 - alpha) + alpha * x1;
         }
 
+        public static float Sigmoid(float x, float t, float u)
+        {
+            return 1 / (1 + (float)Math.Pow(Math.E, -t * x + u));
+        }
+
         public static float Distance(Vector2 a, Vector2 b)
         {
             return (float)Math.Sqrt(Math.Pow(b.X - a.X, 2) + Math.Pow(b.Y - a.Y, 2));
