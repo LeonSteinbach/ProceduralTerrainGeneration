@@ -46,9 +46,9 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			MaxHeight = width / 3;
+			MaxHeight = width / 4;
 			waterLevel = width / 12;
-			waterEnabled = true;
+			waterEnabled = false;
 
 			objects = new List<Vector3>();
 		}
@@ -56,7 +56,7 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
-			//GenerateIsland();
+			GenerateIsland();
 
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);

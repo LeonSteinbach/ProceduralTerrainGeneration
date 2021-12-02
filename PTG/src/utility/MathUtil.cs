@@ -10,9 +10,15 @@ namespace PTG.utility
             return x0 * (1 - alpha) + alpha * x1;
         }
 
+        public static float InterpolateSmooth(float x0, float x1, float alpha)
+        {
+	        float v = Interpolate(x0, x1, alpha);
+	        return Sigmoid(v, 12f, 6f);
+        }
+
         public static float Sigmoid(float x, float t, float u)
         {
-            return 1 / (1 + (float)Math.Pow(Math.E, -t * x + u));
+	        return 1 / (1 + (float) Math.Pow(Math.E, -t * x + u));
         }
 
         public static float Distance(Vector2 a, Vector2 b)

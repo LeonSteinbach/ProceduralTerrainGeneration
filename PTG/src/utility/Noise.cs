@@ -69,10 +69,10 @@ namespace PTG.utility
                     int sampleJ1 = (sampleJ0 + samplePeriod) % height;
                     float verticalBlend = (j - sampleJ0) * sampleFrequency;
 
-                    float top = MathUtil.Interpolate(baseNoise[sampleI0, sampleJ0], baseNoise[sampleI1, sampleJ0], horizontalBlend);
-                    float bottom = MathUtil.Interpolate(baseNoise[sampleI0, sampleJ1], baseNoise[sampleI1, sampleJ1], horizontalBlend);
+                    float top = MathUtil.InterpolateSmooth(baseNoise[sampleI0, sampleJ0], baseNoise[sampleI1, sampleJ0], horizontalBlend);
+                    float bottom = MathUtil.InterpolateSmooth(baseNoise[sampleI0, sampleJ1], baseNoise[sampleI1, sampleJ1], horizontalBlend);
 
-                    smoothNoise[i, j] = MathUtil.Interpolate(top, bottom, verticalBlend);
+                    smoothNoise[i, j] = MathUtil.InterpolateSmooth(top, bottom, verticalBlend);
                 }
             }
 
