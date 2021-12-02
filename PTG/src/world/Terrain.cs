@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -15,6 +16,8 @@ namespace PTG.world
 
 		private readonly bool waterEnabled;
 		private readonly int waterLevel;
+
+		private readonly List<Vector3> objects;
 
 		private VertexPositionNormalTextureTangentBinormal[] vertices;
 		private int[] indices;
@@ -47,13 +50,17 @@ namespace PTG.world
 
 			MaxHeight = width / 4;
 			waterLevel = width / 12;
-			waterEnabled = false;
+			waterEnabled = true;
+
+			objects = new List<Vector3>();
 		}
 
 		public void Generate()
 		{
 			SetHeights();
 			//InitializeBrush();
+
+			GenerateObjects();
 
 			SetVertices();
 			SetIndices();
@@ -81,6 +88,41 @@ namespace PTG.world
 					{
 						HeightMap[x, y] = level;
 					}
+				}
+			}
+		}
+
+		public void GenerateObjects()
+		{
+			int spacing = 2;
+			int biomeSize = 6;
+			float biomeFactor = 0.5f;
+			float heightFactor = 0.4f;
+			float slopeFactor = 0.3f;
+			float quantity = 0.6f;
+
+			objects.Clear();
+
+			float[,] noise = Noise.PerlinNoise(Width, Height, biomeSize, device);
+
+			for (int z = RandomHelper.RandInt(0, spacing); z < Height - 1; z += spacing)
+			{
+				for (int x = RandomHelper.RandInt(0, spacing); x < Width - 1; x += spacing)
+				{
+					float y = HeightMap[x, z];
+					if (y <= 0) y = 0;
+
+					if (waterEnabled && y <= waterLevel + 0.05f) continue;
+
+					int heightRand = RandomHelper.RandInt((int) (y * 0.5f), (int) y);
+					float rand = RandomHelper.RandFloat();
+
+					Vector2 gradient = CalculateGradient(new Vector2(x, z));
+					float slope = (float) Math.Sqrt(gradient.X * gradient.X + gradient.Y * gradient.Y);
+
+					if (noise[x, z] > biomeFactor || heightRand > MaxHeight * heightFactor || rand > quantity || slope > slopeFactor) continue;
+					
+					objects.Add(new Vector3(x, y, -z));
 				}
 			}
 		}
@@ -392,7 +434,24 @@ namespace PTG.world
 			indexBuffer.SetData(indices);
 		}
 
-		public void Render(Camera camera)
+		public void DrawModel(Model model, Vector3 position, Camera camera)
+		{
+			foreach (ModelMesh mesh in model.Meshes)
+			{
+				foreach (BasicEffect basicEffect in mesh.Effects)
+				{
+					basicEffect.AmbientLightColor = new Vector3(1f, 0, 0);
+					basicEffect.EnableDefaultLighting();
+					basicEffect.World = Matrix.CreateWorld(position, Vector3.UnitZ, Vector3.Up);
+					basicEffect.View = camera.View;
+					basicEffect.Projection = camera.Projection;
+				}
+
+				mesh.Draw();
+			}
+		}
+
+		public void Render(Camera camera, Model tree)
 		{
 			//effect.CurrentTechnique = effect.Techniques["Colored"];
 			effect.CurrentTechnique = effect.Techniques["Textured"];
@@ -433,6 +492,11 @@ namespace PTG.world
 					0,
 					0,
 					vertexBuffer.VertexCount * 2);
+			}
+
+			foreach (Vector3 modelPosition in objects)
+			{
+				DrawModel(tree, modelPosition, camera);
 			}
 		}
 	}

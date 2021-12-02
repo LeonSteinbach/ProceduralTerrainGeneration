@@ -15,6 +15,8 @@ namespace PTG.core
         private Camera camera;
         private Terrain terrain;
 
+        private Model tree;
+
         private int mapSize;
 
         public PtgGame()
@@ -58,6 +60,8 @@ namespace PTG.core
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            tree = Content.Load<Model>("models/tree");
+
             mapSize = 512;
 
             camera = new Camera(new Vector3(-mapSize / 2f, mapSize / 2f, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
@@ -87,6 +91,11 @@ namespace PTG.core
             if (Input.IsKeyPressed(Keys.N))
             {
                 terrain.Generate();
+            }
+
+            if (Input.IsKeyPressed(Keys.O))
+            {
+	            terrain.GenerateObjects();
             }
 
             if (Input.IsKeyHold(Keys.E))
@@ -124,11 +133,7 @@ namespace PTG.core
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
-
-            spriteBatch.End();
-
-            terrain.Render(camera);
+            terrain.Render(camera, tree);
 
             base.Draw(gameTime);
         }
