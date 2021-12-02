@@ -10,7 +10,7 @@ namespace PTG.core
     public class PtgGame : Game
     {
         private readonly GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
+        //private SpriteBatch spriteBatch;
 
         private Camera camera;
         private Terrain terrain;
@@ -58,7 +58,7 @@ namespace PTG.core
 
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            //spriteBatch = new SpriteBatch(GraphicsDevice);
 
             tree = Content.Load<Model>("models/tree");
 

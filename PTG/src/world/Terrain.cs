@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -23,8 +22,6 @@ namespace PTG.world
 		private int[] indices;
 
 		public float[,] HeightMap { get; set; }
-		private List<int>[,] erosionBrushIndices;
-		private List<float>[,] erosionBrushWeights;
 
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -39,8 +36,9 @@ namespace PTG.world
 
 		public Terrain(int width, int height, Effect effect, Texture2D texture0, Texture2D texture1, Texture2D texture2, Texture2D texture3, GraphicsDevice device)
 		{
-			this.Width = width;
-			this.Height = height;
+			Width = width;
+			Height = height;
+
 			this.effect = effect;
 			this.texture0 = texture0;
 			this.texture1 = texture1;
@@ -58,7 +56,6 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
-			//InitializeBrush();
 
 			GenerateObjects();
 
@@ -215,92 +212,11 @@ namespace PTG.world
 						HeightMap[node.X + 1, node.Y] -= 0.25f * amountToErode * offset.X * (1 - offset.Y);
 						HeightMap[node.X, node.Y + 1] -= 0.25f * amountToErode * (1 - offset.X) * offset.Y;
 						HeightMap[node.X + 1, node.Y + 1] -= 0.25f * amountToErode * offset.X * offset.Y;
-
-						/*
-						// Use erosion brush to erode from all nodes inside the droplet's erosion radius
-						for (int brushPointIndex = 0; brushPointIndex < erosionBrushIndices[node.X, node.Y].Count; brushPointIndex++)
-						{
-							int nodeIndexX = erosionBrushIndices[node.X, node.Y][brushPointIndex] / width / 2;
-							int nodeIndexY = erosionBrushIndices[node.X, node.Y][brushPointIndex] % height;
-
-							if (nodeIndexX >= width - 1 || nodeIndexY >= height - 1)
-							{
-								break;
-							}
-
-							float weighedErodeAmount = amountToErode * erosionBrushWeights[node.X, node.Y][brushPointIndex];
-							float deltaSediment = (heightMap[nodeIndexX, nodeIndexY] < weighedErodeAmount) ? heightMap[nodeIndexX, nodeIndexY] : weighedErodeAmount;
-							heightMap[nodeIndexX, nodeIndexY] -= deltaSediment;
-							sediment += deltaSediment;
-						}
-						*/
 					}
 
 					// Update speed and water content
 					speed = (float) Math.Sqrt(speed * speed + deltaHeight * gravity);
 					water *= 1 - evaporateSpeed;
-				}
-			}
-		}
-
-		private void InitializeBrush()
-		{
-			int radius = 6;
-
-			erosionBrushIndices = new List<int>[Width, Height];
-			erosionBrushWeights = new List<float>[Width, Height];
-
-			int[] xOffsets = new int[radius * radius * 4];
-			int[] yOffsets = new int[radius * radius * 4];
-			float[] weights = new float[radius * radius * 4];
-			float weightSum = 0;
-			int addIndex = 0;
-
-			for (int j = 0; j < Height; j++)
-			{
-				for (int i = 0; i < Width; i++)
-				{
-					int centreX = i;
-					int centreY = j;
-
-					if (centreY <= radius || centreY >= Height - radius || centreX <= radius + 1 ||
-					    centreX >= Width - radius)
-					{
-						weightSum = 0;
-						addIndex = 0;
-						for (int y = -radius; y <= radius; y++)
-						{
-							for (int x = -radius; x <= radius; x++)
-							{
-								float sqrDst = x * x + y * y;
-								if (sqrDst < radius * radius)
-								{
-									int coordX = centreX + x;
-									int coordY = centreY + y;
-
-									if (coordX >= 0 && coordX < Width && coordY >= 0 && coordY < Height)
-									{
-										float weight = 1 - (float)Math.Sqrt(sqrDst) / radius;
-										weightSum += weight;
-										weights[addIndex] = weight;
-										xOffsets[addIndex] = x;
-										yOffsets[addIndex] = y;
-										addIndex++;
-									}
-								}
-							}
-						}
-					}
-
-					int numEntries = addIndex;
-					erosionBrushIndices[i, j] = new List<int>(numEntries);
-					erosionBrushWeights[i, j] = new List<float>(numEntries);
-
-					for (int n = 0; n < numEntries; n++)
-					{
-						erosionBrushIndices[i, j].Add((yOffsets[n] + centreY) * Width + xOffsets[n] + centreX);
-						erosionBrushWeights[i, j].Add(weights[n] / weightSum);
-					}
 				}
 			}
 		}
@@ -350,12 +266,12 @@ namespace PTG.world
 				for (int x = 0; x < Width - 1; x++)
 				{
 					// Create triangles
-					indices[i] = (int)(x + (y + 1) * Width);           // up left
-					indices[i + 1] = (int)(x + y * Width + 1);         // down right
-					indices[i + 2] = (int)(x + y * Width);             // down left
-					indices[i + 3] = (int)(x + (y + 1) * Width);       // up left
-					indices[i + 4] = (int)(x + (y + 1) * Width + 1);   // up right
-					indices[i + 5] = (int)(x + y * Width + 1);         // down right
+					indices[i] = x + (y + 1) * Width;           // up left
+					indices[i + 1] = x + y * Width + 1;         // down right
+					indices[i + 2] = x + y * Width;             // down left
+					indices[i + 3] = x + (y + 1) * Width;       // up left
+					indices[i + 4] = x + (y + 1) * Width + 1;   // up right
+					indices[i + 5] = x + y * Width + 1;         // down right
 					i += 6;
 				}
 			}
@@ -396,8 +312,8 @@ namespace PTG.world
 				vertices[index3].Normal += normal;
 			}
 
-			for (int i = 0; i < vertices.Length; i++)
-				vertices[i].Normal.Normalize();
+			foreach (var vertex in vertices)
+				vertex.Normal.Normalize();
 		}
 
 		public void CalculateTangentsAndBinormals()
@@ -438,8 +354,9 @@ namespace PTG.world
 		{
 			foreach (ModelMesh mesh in model.Meshes)
 			{
-				foreach (BasicEffect basicEffect in mesh.Effects)
+				foreach (var effect1 in mesh.Effects)
 				{
+					var basicEffect = (BasicEffect) effect1;
 					basicEffect.AmbientLightColor = new Vector3(1f, 0, 0);
 					basicEffect.EnableDefaultLighting();
 					basicEffect.World = Matrix.CreateWorld(position, Vector3.UnitZ, Vector3.Up);
