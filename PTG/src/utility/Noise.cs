@@ -79,7 +79,7 @@ namespace PTG.utility
             return smoothNoise;
         }
 
-        public static float[,] PerlinNoise(int width, int height, int octaveCount, GraphicsDevice device, float maximum = 1f)
+        public static float[,] PerlinNoise(int width, int height, int octaveCount, GraphicsDevice device, float maximum = 1f, bool save = false)
         {
 	        float[][,] smoothNoise = new float[octaveCount][,];
             float persistence = 0.5f;
@@ -98,7 +98,8 @@ namespace PTG.utility
 	            // Generate smooth noise
                 smoothNoise[i] = GenerateSmoothNoise(baseNoise, width, height, octaveCount - i);
 
-                SaveArrayToPng("gen/smooth_noise_" + i + ".png", device, smoothNoise[i], width, height, 1);
+				if (save)
+					SaveArrayToPng("gen/smooth_noise_" + i + ".png", device, smoothNoise[i], width, height, 1);
             }
 
             float[,] perlinNoise = new float[width, height];
@@ -136,7 +137,8 @@ namespace PTG.utility
             
             Amplify(perlinNoise, width, height, min, max, maximum);
 
-            SaveArrayToPng("gen/perlin_noise.png", device, perlinNoise, width, height, maximum);
+			if (save)
+				SaveArrayToPng("gen/perlin_noise.png", device, perlinNoise, width, height, maximum);
 
             return perlinNoise;
         }

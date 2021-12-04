@@ -56,7 +56,7 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
-			GenerateIsland();
+			//GenerateIsland();
 
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);
@@ -73,7 +73,7 @@ namespace PTG.world
 
 		public void SetHeights()
 		{
-			HeightMap = Noise.PerlinNoise(Width, Height, 8, device, maximum: MaxHeight);
+			HeightMap = Noise.PerlinNoise(Width, Height, 8, device, maximum: MaxHeight, save: true);
 		}
 
 		private void SetWaterLevel(float level)
