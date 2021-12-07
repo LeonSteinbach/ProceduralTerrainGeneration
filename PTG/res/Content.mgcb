@@ -125,7 +125,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=0.001
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=Compressed
+/processorParam:TextureFormat=Color
 /build:models/tree.fbx
 
 #begin shaders/effects.fx

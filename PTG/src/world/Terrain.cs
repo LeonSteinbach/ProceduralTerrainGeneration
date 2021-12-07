@@ -56,7 +56,7 @@ namespace PTG.world
 		public void Generate()
 		{
 			SetHeights();
-			//GenerateIsland();
+			GenerateIsland();
 
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);
@@ -113,8 +113,8 @@ namespace PTG.world
 			int biomeSize = 6;
 			float biomeFactor = 0.6f;
 			float heightFactor = 0.4f;
-			float slopeFactor = 0.4f;
-			float quantity = 0.6f;
+			float slopeFactor = 0.2f;
+			float quantity = 0.5f;
 
 			objects.Clear();
 
@@ -136,8 +136,10 @@ namespace PTG.world
 					float slope = (float) Math.Sqrt(gradient.X * gradient.X + gradient.Y * gradient.Y);
 
 					if (noise[x, z] > biomeFactor || heightRand > MaxHeight * heightFactor || rand > quantity || slope > slopeFactor) continue;
-					
-					objects.Add(new Vector3(x, y, -z));
+
+					Vector3 offset = new Vector3(RandomHelper.RandFloat(), 0, RandomHelper.RandFloat());
+
+					objects.Add(new Vector3(x, y, -z) + offset);
 				}
 			}
 		}
