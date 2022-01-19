@@ -77,11 +77,11 @@ VertexToPixel ColoredVS(float4 Pos : POSITION, float3 N : NORMAL, float4 C : COL
 	}
 	else if (Pos[1] <= 130.0f && Pos[1] > 80.0f)
 	{
-		Output.Color = Green;
+		Output.Color = Red;
 	}
 	else
 	{
-		Output.Color = Blue;
+		Output.Color = Red;
 	}
 
 	float3 Normal = normalize(mul(normalize(N), World));

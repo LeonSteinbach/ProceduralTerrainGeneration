@@ -123,7 +123,7 @@
 /processorParam:RotationX=0
 /processorParam:RotationY=0
 /processorParam:RotationZ=0
-/processorParam:Scale=0.001
+/processorParam:Scale=0.002
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Color
 /build:models/tree.fbx
