@@ -43,7 +43,7 @@ namespace PTG.utility
 				for (int x = 0; x < texture.Height; x++)
 				{
 					Color color = pixels[x + y * texture.Width];
-					array[x, y] = (color.R + color.G + color.B) / 3f / 255f * maxHeight;
+					array[y, x] = (color.R + color.G + color.B) / 3f / 255f * maxHeight;
 				}
 			}
 
