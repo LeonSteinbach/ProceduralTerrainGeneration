@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PTG.utility;
@@ -34,6 +35,8 @@ namespace PTG.world
 		private readonly Texture2D texture2;
 		private readonly Texture2D texture3;
 
+		private int counter = 0;
+
 		public Terrain(int width, int height, Effect effect, Texture2D texture0, Texture2D texture1, Texture2D texture2, Texture2D texture3, GraphicsDevice device)
 		{
 			Width = width;
@@ -46,8 +49,8 @@ namespace PTG.world
 			this.texture3 = texture3;
 			this.device = device;
 
-			MaxHeight = width / 4;
-			waterLevel = width / 12;
+			MaxHeight = width / 3;
+			waterLevel = width / 14;
 			waterEnabled = false;
 
 			objects = new List<Vector3>();
@@ -61,7 +64,7 @@ namespace PTG.world
 			if (waterEnabled)
 				SetWaterLevel(waterLevel);
 
-			GenerateObjects();
+			//GenerateObjects();
 
 			SetVertices();
 			SetIndices();
@@ -147,15 +150,17 @@ namespace PTG.world
 		public void Erode()
 		{
 			int numIterations = 100000;
-			int maxLifetime = 100;
-			float inertia = 0.05f;
-			float sedimentCapacityFactor = 4f;
-			float minSedimentCapacity = 0.01f;
+			int maxSteps = 100;
+			float inertia = 0.99f;
+			float sedimentCapacityFactor = 100f;
+			float minSedimentCapacity = 100.001f;
 			float gravity = 0.1f;
-			float evaporateSpeed = 0.01f;
+			float evaporateSpeed = 0.03f;
 			float depositSpeed = 1.0f;
 			float erodeSpeed = 1.0f;
-			float ruggedness = 0.1f;
+
+			DateTime start = DateTime.UtcNow;
+			counter++;
 
 			for (int iteration = 0; iteration < numIterations; iteration++)
 			{
@@ -168,7 +173,7 @@ namespace PTG.world
 				float water = 1f;
 				float sediment = 0f;
 
-				for (int lifetime = 0; lifetime < maxLifetime; lifetime++)
+				for (int step = 0; step < maxSteps; step++)
 				{
 					Point node = new Point((int) pos.X, (int) pos.Y);
 					Vector2 offset = new Vector2(pos.X - node.X, pos.Y - node.Y);
@@ -181,8 +186,8 @@ namespace PTG.world
 					float posHeight = CalculateHeight(pos);
 
 					// Update the droplet's direction and position
-					dir.X += (dir.X * inertia - gradient.X * (1 - inertia)) * ruggedness;
-					dir.Y += (dir.Y * inertia - gradient.Y * (1 - inertia)) * ruggedness;
+					dir.X += dir.X * inertia - gradient.X * (1 - inertia);
+					dir.Y += dir.Y * inertia - gradient.Y * (1 - inertia);
 					dir.Normalize();
 
 					pos += dir;
@@ -198,9 +203,7 @@ namespace PTG.world
 					float deltaHeight = newPosHeight - posHeight;
 
 					// Calculate the droplet's sediment capacity
-					float sedimentCapacity = Math.Max(
-						-deltaHeight * speed * water * sedimentCapacityFactor,
-						minSedimentCapacity);
+					float sedimentCapacity = Math.Max(-deltaHeight, minSedimentCapacity) * speed * water * sedimentCapacityFactor;
 
 					// Deposit
 					if (sediment > sedimentCapacity)
@@ -225,7 +228,7 @@ namespace PTG.world
 						float amountToErode = Math.Min((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
 
 						if (float.IsNaN(amountToErode)) break;
-						sediment += 0.25f * amountToErode;
+						sediment += amountToErode;
 
 						// Use erosion brush to erode from all nodes inside the droplet's brush radius
 						HeightMap[node.X, node.Y] -= 0.25f * amountToErode * (1 - offset.X) * (1 - offset.Y);
@@ -239,6 +242,10 @@ namespace PTG.world
 					water *= 1 - evaporateSpeed;
 				}
 			}
+
+			DateTime end = DateTime.UtcNow;
+			TimeSpan timeDiff = end - start;
+			Debug.Write(counter + " " + Convert.ToInt32(timeDiff.TotalMilliseconds) + " ");
 		}
 
 		private Vector2 CalculateGradient(Vector2 pos)
@@ -390,8 +397,8 @@ namespace PTG.world
 
 		public void Render(Camera camera, Model tree)
 		{
-			//effect.CurrentTechnique = effect.Techniques["Colored"];
-			effect.CurrentTechnique = effect.Techniques["Textured"];
+			effect.CurrentTechnique = effect.Techniques["Colored"];
+			//effect.CurrentTechnique = effect.Techniques["Textured"];
 
 			// Data
 			//effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
@@ -404,7 +411,7 @@ namespace PTG.world
 			effect.Parameters["World"].SetValue(Matrix.Identity);
 
 			// Lighting
-			Vector3 light = new Vector3(1.0f, -0.5f, -0.5f);
+			Vector3 light = new Vector3(-1.0f, -0.5f, 0.5f);
 			light.Normalize();
 
 			effect.Parameters["LightDirection"].SetValue(light);
