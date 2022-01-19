@@ -12,8 +12,8 @@ namespace PTG.graphics
         private Vector3 cameraDirection;
         private readonly Vector3 cameraUp;
 
-        float speed = 0.1f;
-        float rotateSpeed = 0.05f;
+        float speed = 0.5f;
+        float rotateSpeed = 0.005f;
 
         public Camera(Vector3 pos, Vector3 target, Vector3 up)
         {
