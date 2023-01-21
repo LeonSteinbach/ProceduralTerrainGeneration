@@ -64,12 +64,12 @@ namespace PTG.core
 
             mapSize = 512;
 
-            camera = new Camera(new Vector3(mapSize * 1.5f, mapSize, -mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
+            camera = new Camera(new Vector3(mapSize * 1.5f, mapSize, mapSize / 2f), new Vector3(mapSize / 2f, 0, -mapSize / 2f), Vector3.Up);
             camera.Initialize();
 
             terrain = new Terrain(
-	            mapSize, mapSize, 
-	            Content.Load<Effect>("shaders/effects"), 
+	            mapSize, mapSize,
+	            Content.Load<Effect>("shaders/effects"),
 	            Content.Load<Texture2D>("images/ice"),
 	            Content.Load<Texture2D>("images/rock"),
 	            Content.Load<Texture2D>("images/snow"),

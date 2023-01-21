@@ -397,8 +397,8 @@ namespace PTG.world
 
 		public void Render(Camera camera, Model tree)
 		{
-			effect.CurrentTechnique = effect.Techniques["Colored"];
-			//effect.CurrentTechnique = effect.Techniques["Textured"];
+			//effect.CurrentTechnique = effect.Techniques["Colored"];
+			effect.CurrentTechnique = effect.Techniques["Textured"];
 
 			// Data
 			//effect.Parameters["MaxHeight"].SetValue((float) maxHeight);
